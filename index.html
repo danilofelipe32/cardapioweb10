@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Black Burger - Cardápio Digital</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                        'slide-up': 'slideUp 0.5s ease-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #555;
+        }
+        .dark ::-webkit-scrollbar-thumb:hover {
+            background: #777;
+        }
+        
+        /* Hide scrollbar for category pills */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-neutral-900 transition-colors duration-300 dark:bg-[#050505] dark:text-gray-100 font-sans selection:bg-red-500/30 selection:text-red-900 dark:selection:text-red-200">
+
+    <!-- Background Gradients -->
+    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <div class="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-red-600/5 dark:bg-red-600/10 blur-[120px] rounded-full mix-blend-multiply dark:mix-blend-screen"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-red-900/5 dark:bg-red-900/10 blur-[150px] rounded-full mix-blend-multiply dark:mix-blend-screen"></div>
+    </div>
+
+    <!-- App Container -->
+    <div id="app" class="relative min-h-screen flex flex-col">
+        
+        <!-- Header -->
+        <header class="sticky top-0 z-50 w-full bg-white/90 dark:bg-[#050505]/90 backdrop-blur-xl border-b border-black/5 dark:border-white/5 transition-colors duration-300 shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 h-20 flex justify-between items-center">
+                <div class="flex items-center gap-3 cursor-pointer group" onclick="closeDetails()">
+                    <div class="bg-gradient-to-tr from-red-600 to-red-500 p-2.5 rounded-xl shadow-[0_0_20px_rgba(220,38,38,0.3)] group-hover:scale-105 transition-transform duration-300">
+                        <i data-lucide="chef-hat" class="text-white w-5 h-5"></i>
+                    </div>
+                    <div class="flex flex-col -space-y-1">
+                        <span class="text-xs font-bold text-neutral-400 dark:text-neutral-500 tracking-[0.2em] uppercase">The Original</span>
+                        <h1 class="text-2xl font-black tracking-tighter text-neutral-900 dark:text-white">
+                            BLACK<span class="text-red-600 dark:text-red-500">BURGER</span>
+                        </h1>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 md:gap-6">
+                    <button onclick="toggleTheme()" class="p-2 rounded-full text-neutral-500 hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+                        <i id="theme-icon" data-lucide="moon" class="w-5 h-5"></i>
+                    </button>
+
+                    <button onclick="toggleAdmin()" class="p-2 rounded-full text-neutral-500 hover:text-black dark:hover:text-white transition-colors" id="admin-btn">
+                        <i data-lucide="edit-3" class="w-5 h-5"></i>
+                    </button>
+
+                    <button onclick="toggleCart()" class="flex items-center gap-3 group relative p-2 md:p-0">
+                        <span class="hidden md:block text-sm font-medium text-neutral-500 dark:text-neutral-400 group-hover:text-black dark:group-hover:text-white transition-colors">Seu Pedido</span>
+                        <div class="relative bg-black/5 dark:bg-white/5 group-hover:bg-red-600 dark:group-hover:bg-red-600 group-hover:text-white text-neutral-900 dark:text-white p-2.5 md:p-3 rounded-2xl transition-all duration-300 border border-black/5 dark:border-white/5 group-hover:border-red-500 group-hover:shadow-[0_0_20px_rgba(220,38,38,0.4)]">
+                            <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+                            <span id="cart-count" class="absolute -top-1.5 -right-1.5 bg-white text-red-600 text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-full shadow-lg border border-red-100 hidden">0</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main id="main-view" class="flex-1 relative z-10">
+            
+            <!-- Hero Title (Scrolls away) -->
+            <section class="relative pt-12 pb-8 px-4 text-center overflow-hidden">
+                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-full bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-gray-100/50 via-gray-50 to-gray-50 dark:from-neutral-900/50 dark:via-[#050505] dark:to-[#050505] -z-10"></div>
+                
+                <h2 class="text-4xl md:text-8xl font-black mb-4 tracking-tighter leading-[0.9] text-neutral-900 dark:text-white">
+                    SABOR QUE <br />
+                    <span class="text-transparent bg-clip-text bg-gradient-to-b from-red-600 to-red-800 dark:from-red-500 dark:to-red-800">DOMINA</span>
+                </h2>
+                <p class="text-neutral-600 dark:text-neutral-400 max-w-xl mx-auto text-base md:text-xl font-light">
+                    Hambúrgueres artesanais feitos com paixão e ingredientes premium.
+                </p>
+            </section>
+
+            <!-- Sticky Controls Section (Search + Categories + Filters) -->
+            <section class="sticky top-20 z-40 bg-gray-50/95 dark:bg-[#050505]/95 backdrop-blur-md border-y border-black/5 dark:border-white/5 shadow-sm transition-colors duration-300 py-4">
+                <div class="max-w-7xl mx-auto px-4 space-y-4">
+                    
+                    <!-- Search Bar -->
+                    <div class="relative max-w-md mx-auto w-full">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i data-lucide="search" class="h-5 w-5 text-neutral-400"></i>
+                        </div>
+                        <input 
+                            type="text" 
+                            id="search-input"
+                            placeholder="Buscar lanches, ingredientes..." 
+                            class="block w-full pl-10 pr-3 py-3 border border-black/5 dark:border-white/10 rounded-xl leading-5 bg-white dark:bg-white/5 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all sm:text-sm shadow-sm"
+                            oninput="handleSearch(this.value)"
+                        >
+                    </div>
+
+                    <!-- Categories (Scrollable) -->
+                    <div class="flex justify-start md:justify-center overflow-x-auto no-scrollbar pb-1 -mx-4 px-4 md:mx-0">
+                        <div id="categories-container" class="inline-flex space-x-2">
+                            <!-- Injected via JS -->
+                        </div>
+                    </div>
+
+                    <!-- One-Tap Filters -->
+                    <div id="filters-container" class="flex flex-wrap justify-center gap-2 md:gap-3">
+                        <!-- Injected via JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Best Sellers (Only visible on Home/No Filter) -->
+            <section id="best-sellers-section" class="max-w-7xl mx-auto px-4 mt-8 mb-12 animate-slide-up scroll-mt-48">
+                <div class="flex items-center gap-2 mb-6 text-red-600 dark:text-red-500">
+                    <i data-lucide="flame" class="animate-pulse w-6 h-6 fill-current"></i>
+                    <h3 class="text-xl font-black uppercase tracking-wider text-neutral-900 dark:text-white">MAIS PEDIDOS</h3>
+                </div>
+                <div id="best-sellers-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Injected via JS -->
+                </div>
+            </section>
+
+            <!-- Admin Panel (Hidden by default) -->
+            <section id="admin-panel" class="max-w-2xl mx-auto px-4 mb-16 hidden animate-fade-in scroll-mt-40">
+                <div class="bg-white dark:bg-[#0f0f0f] border border-red-500/20 rounded-3xl p-8 shadow-2xl">
+                    <h3 class="text-xl font-black text-neutral-900 dark:text-white mb-6 flex items-center gap-2">
+                        <i data-lucide="edit-3" class="text-red-500 w-6 h-6"></i> 
+                        GERENCIAR CARDÁPIO
+                    </h3>
+                    <form onsubmit="handleAddItem(event)" class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <input id="admin-name" placeholder="Nome" class="bg-gray-50 dark:bg-black/50 border border-black/10 dark:border-white/10 p-4 rounded-xl text-neutral-900 dark:text-white focus:border-red-500 outline-none w-full" required />
+                            <input id="admin-price" placeholder="Preço" type="number" step="0.10" class="bg-gray-50 dark:bg-black/50 border border-black/10 dark:border-white/10 p-4 rounded-xl text-neutral-900 dark:text-white focus:border-red-500 outline-none w-full" required />
+                        </div>
+                        <input id="admin-image" placeholder="URL da Imagem" class="w-full bg-gray-50 dark:bg-black/50 border border-black/10 dark:border-white/10 p-4 rounded-xl text-neutral-900 dark:text-white focus:border-red-500 outline-none" />
+                        <textarea id="admin-desc" placeholder="Descrição" class="w-full bg-gray-50 dark:bg-black/50 border border-black/10 dark:border-white/10 p-4 rounded-xl text-neutral-900 dark:text-white focus:border-red-500 outline-none h-24 resize-none"></textarea>
+                        <div class="flex gap-4">
+                            <select id="admin-cat" class="bg-gray-50 dark:bg-black/50 border border-black/10 dark:border-white/10 p-4 rounded-xl text-neutral-900 dark:text-white focus:border-red-500 outline-none flex-1 cursor-pointer">
+                                <option>Sanduíches</option><option>Bebidas</option><option>Acompanhamentos</option>
+                            </select>
+                            <button type="submit" class="flex-1 bg-green-600 hover:bg-green-500 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all">
+                                SALVAR <i data-lucide="save" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Full Menu Grid -->
+            <div id="full-menu-container" class="max-w-7xl mx-auto px-4 pb-16 pt-8">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center gap-2 text-neutral-500">
+                        <i data-lucide="chef-hat" class="w-5 h-5"></i>
+                        <h3 id="menu-title" class="text-sm font-bold uppercase tracking-wider">CARDÁPIO COMPLETO</h3>
+                    </div>
+                </div>
+                
+                <div id="products-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Injected via JS -->
+                </div>
+                <div id="empty-state" class="hidden text-center py-20">
+                    <div class="inline-flex p-4 rounded-full bg-neutral-100 dark:bg-neutral-800 mb-4 text-neutral-400">
+                        <i data-lucide="search-x" class="w-8 h-8"></i>
+                    </div>
+                    <p class="text-neutral-500 dark:text-neutral-400 text-lg font-medium">Nenhum item encontrado.</p>
+                    <p class="text-neutral-400 text-sm mt-2">Tente buscar por outro termo ou categoria.</p>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <footer class="bg-gray-100 dark:bg-[#0a0a0a] border-t border-black/5 dark:border-white/5 pt-16 pb-8 transition-colors duration-300 mt-auto">
+                <div class="max-w-7xl mx-auto px-4">
+                    <div class="flex flex-col md:flex-row justify-between items-center gap-8 mb-12">
+                        <div class="text-center md:text-left">
+                            <div class="flex items-center justify-center md:justify-start gap-2 mb-2">
+                                <i data-lucide="chef-hat" class="text-red-600 w-6 h-6"></i>
+                                <span class="text-2xl font-black text-neutral-900 dark:text-white tracking-tighter">
+                                    BLACK<span class="text-red-600">BURGER</span>
+                                </span>
+                            </div>
+                            <p class="text-neutral-500 text-sm max-w-xs">Transformando fome em felicidade, um hambúrguer de cada vez.</p>
+                        </div>
+                        <div class="flex gap-4">
+                            <a href="#" class="w-12 h-12 rounded-full bg-white dark:bg-white/5 border border-black/5 dark:border-transparent hover:bg-red-600 dark:hover:bg-red-600 flex items-center justify-center text-neutral-600 dark:text-white hover:text-white transition-all duration-300 hover:scale-110 shadow-lg dark:shadow-none">
+                                <i data-lucide="instagram" class="w-5 h-5"></i>
+                            </a>
+                            <a href="#" class="w-12 h-12 rounded-full bg-white dark:bg-white/5 border border-black/5 dark:border-transparent hover:bg-blue-600 flex items-center justify-center text-neutral-600 dark:text-white hover:text-white transition-all duration-300 hover:scale-110 shadow-lg dark:shadow-none">
+                                <i data-lucide="facebook" class="w-5 h-5"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="border-t border-black/5 dark:border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-neutral-500 text-sm">
+                        <p>&copy; 2024 Black Burger. Todos os direitos reservados.</p>
+                        <div class="flex gap-6">
+                            <div class="flex items-center gap-2"><i data-lucide="map-pin" class="w-4 h-4"></i> <span>São Paulo, SP</span></div>
+                            <div class="flex items-center gap-2"><i data-lucide="phone" class="w-4 h-4"></i> <span>(11) 99999-9999</span></div>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        </main>
+
+        <!-- Product Details View (Hidden by default) -->
+        <div id="details-view" class="hidden flex-1 animate-fade-in relative z-20">
+            <div class="max-w-7xl mx-auto px-4 py-8">
+                <button onclick="closeDetails()" class="group flex items-center gap-2 text-neutral-500 hover:text-black dark:hover:text-white mb-8 transition-colors font-medium text-sm">
+                    <div class="p-2 rounded-full bg-black/5 dark:bg-white/5 group-hover:bg-black/10 dark:group-hover:bg-white/10 transition-colors">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                    </div>
+                    VOLTAR AO MENU
+                </button>
+                
+                <div id="details-content" class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+                    <!-- Injected via JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Cart Drawer -->
+        <div id="cart-drawer" class="fixed inset-0 z-50 pointer-events-none transition-all duration-500">
+            <div id="cart-overlay" class="absolute inset-0 bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-500" onclick="toggleCart()"></div>
+            
+            <div id="cart-panel" class="absolute top-0 right-0 w-full md:w-[500px] h-full bg-white dark:bg-[#0a0a0a] shadow-2xl border-l border-black/5 dark:border-white/5 transform translate-x-full transition-transform duration-500 cubic-bezier(0.16, 1, 0.3, 1) flex flex-col pointer-events-auto">
+                <div class="p-8 pb-4 flex justify-between items-center border-b border-black/5 dark:border-white/5">
+                    <div>
+                        <h2 class="text-3xl font-black text-neutral-900 dark:text-white tracking-tighter">MEU PEDIDO</h2>
+                        <p class="text-neutral-500 text-sm mt-1">Delivery Black Burger</p>
+                    </div>
+                    <button onclick="toggleCart()" class="w-10 h-10 rounded-full bg-gray-100 dark:bg-white/5 hover:bg-neutral-200 dark:hover:bg-white dark:hover:text-black flex items-center justify-center transition-all text-neutral-600 dark:text-white">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+
+                <div id="cart-items" class="flex-1 overflow-y-auto p-8 space-y-6">
+                    <!-- Injected via JS -->
+                </div>
+
+                <div class="p-8 bg-gray-50 dark:bg-[#0f0f0f] border-t border-black/5 dark:border-white/5">
+                    <div class="flex justify-between items-end mb-6">
+                        <span class="text-neutral-500 dark:text-neutral-400 font-medium">Subtotal</span>
+                        <span class="text-3xl font-black text-neutral-900 dark:text-white">
+                            <span class="text-lg text-red-600 dark:text-red-500 mr-1">R$</span>
+                            <span id="cart-total">0.00</span>
+                        </span>
+                    </div>
+                    
+                    <button id="checkout-btn" onclick="checkoutWhatsApp()" class="w-full py-5 rounded-2xl font-black text-lg flex items-center justify-center gap-3 transition-all transform active:scale-95 bg-gray-200 dark:bg-white/5 text-neutral-400 dark:text-neutral-500 cursor-not-allowed" disabled>
+                        ENVIAR PEDIDO <i data-lucide="smartphone" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- Dados Iniciais ---
+        const initialMenu = [
+            { id: 1, name: "Monster Bacon", description: "Hambúrguer artesanal 180g, muito bacon crocante, queijo cheddar e molho especial BBQ no pão brioche selado na manteiga.", price: 32.90, category: "Sanduíches", image: "https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?auto=format&fit=crop&q=80&w=800", rating: 4.9, time: "20-25 min", calories: "850 kcal", sales: 150, pairingId: 5, tags: [], options: [{id: 'no_onion', name: 'Sem Cebola', price: 0}, {id: 'extra_bacon', name: 'Bacon Extra', price: 5.00}, {id: 'extra_cheese', name: 'Queijo Extra', price: 3.50}, {id: 'extra_sauce', name: 'Molho Extra', price: 2.00}] },
+            { id: 2, name: "Classic Salad", description: "Hambúrguer 150g, alface americana crocante, tomate fresco, cebola roxa e maionese verde da casa no pão de gergelim.", price: 24.50, category: "Sanduíches", image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&q=80&w=800", rating: 4.5, time: "15-20 min", calories: "620 kcal", sales: 80, pairingId: 4, tags: [], options: [{id: 'no_onion', name: 'Sem Cebola', price: 0}, {id: 'no_tomato', name: 'Sem Tomate', price: 0}, {id: 'extra_burger', name: 'Hambúrguer Extra', price: 8.00}] },
+            { id: 3, name: "Dark Chicken", description: "Filé de frango empanado no panko escuro (carvão ativado), cream cheese, alface e geleia de pimenta suave.", price: 28.00, category: "Sanduíches", image: "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&q=80&w=800", rating: 4.7, time: "20-25 min", calories: "710 kcal", sales: 120, pairingId: 4, tags: ['spicy'], options: [{id: 'no_spicy', name: 'Sem Geleia de Pimenta', price: 0}, {id: 'extra_cheese', name: 'Cream Cheese Extra', price: 3.00}] },
+            { id: 4, name: "Coca-Cola Zero", description: "Lata 350ml bem gelada.", price: 6.00, category: "Bebidas", image: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&q=80&w=800", rating: 5.0, time: "Imediato", calories: "0 kcal", sales: 200, tags: ['vegan', 'gluten_free'], options: [] },
+            { id: 5, name: "Fritas Rústicas", description: "Batatas cortadas a mão com casca, temperadas com alecrim, sal grosso e páprica defumada.", price: 18.00, category: "Acompanhamentos", image: "https://images.unsplash.com/photo-1630384060421-a4323ceca041?auto=format&fit=crop&q=80&w=800", rating: 4.8, time: "10-15 min", calories: "400 kcal", sales: 180, tags: ['vegan', 'gluten_free'], options: [{id: 'extra_cheddar', name: 'Cheddar e Bacon', price: 6.00}, {id: 'extra_mayo', name: 'Maionese Extra', price: 2.00}] }
+        ];
+
+        const dietaryTags = [
+            { id: 'spicy', label: 'Picante', icon: 'flame', color: 'text-orange-500', border: 'border-orange-500/30', bg: 'bg-orange-500/10' },
+            { id: 'vegan', label: 'Vegano', icon: 'leaf', color: 'text-green-500', border: 'border-green-500/30', bg: 'bg-green-500/10' },
+            { id: 'gluten_free', label: 'Sem Glúten', icon: 'wheat-off', color: 'text-blue-400', border: 'border-blue-400/30', bg: 'bg-blue-400/10' },
+        ];
+
+        const categories = ["Todos", "Sanduíches", "Acompanhamentos", "Bebidas"];
+
+        // --- Estado Global ---
+        let state = {
+            menu: [...initialMenu],
+            cart: [],
+            filter: "Todos",
+            activeTag: null,
+            searchTerm: "",
+            isCartOpen: false,
+            isAdminMode: false,
+            selectedProduct: null,
+            selectedOptions: {} 
+        };
+
+        // --- Inicialização ---
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            initTheme();
+            renderCategories();
+            renderFilters();
+            renderBestSellers();
+            renderMenu();
+            renderCart();
+        });
+
+        // --- Funções de Renderização ---
+
+        function renderCategories() {
+            const container = document.getElementById('categories-container');
+            container.innerHTML = categories.map(cat => `
+                <button onclick="setFilter('${cat}')" 
+                    class="px-6 py-2.5 rounded-full text-sm font-bold uppercase tracking-wider transition-all duration-300 whitespace-nowrap flex-shrink-0
+                    ${state.filter === cat 
+                        ? 'bg-red-600 text-white shadow-lg shadow-red-500/30' 
+                        : 'bg-white dark:bg-white/5 border border-black/5 dark:border-white/5 text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10'}">
+                    ${cat}
+                </button>
+            `).join('');
+        }
+
+        function renderFilters() {
+            const container = document.getElementById('filters-container');
+            container.innerHTML = dietaryTags.map(tag => {
+                const isActive = state.activeTag === tag.id;
+                return `
+                <button onclick="setTag('${tag.id}')"
+                    class="flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-xl text-xs md:text-sm font-bold border transition-all duration-300 transform active:scale-95 flex-shrink-0
+                    ${isActive
+                        ? `${tag.bg} ${tag.border} ${tag.color} shadow-lg ring-1 ring-offset-2 ring-offset-transparent`
+                        : 'bg-white dark:bg-white/5 border-black/5 dark:border-white/5 text-neutral-500 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-white/10'}">
+                    <i data-lucide="${tag.icon}" class="w-3.5 h-3.5"></i> ${tag.label}
+                    ${isActive ? '<i data-lucide="check" class="w-3.5 h-3.5 ml-1"></i>' : ''}
+                </button>
+            `}).join('');
+            lucide.createIcons();
+        }
+
+        function renderBestSellers() {
+            const section = document.getElementById('best-sellers-section');
+            // Hide if searching or filtering by tag, or filtering by specific category other than 'Todos'
+            if (state.filter !== "Todos" || state.activeTag !== null || state.searchTerm !== "") {
+                section.classList.add('hidden');
+                return;
+            }
+            section.classList.remove('hidden');
+
+            const container = document.getElementById('best-sellers-grid');
+            const popular = [...state.menu].sort((a, b) => (b.sales || 0) - (a.sales || 0)).slice(0, 3);
+            
+            container.innerHTML = popular.map((item, index) => `
+                <div onclick="openDetails(${item.id})" class="relative group cursor-pointer">
+                    <div class="absolute -top-3 -left-3 z-20 w-10 h-10 bg-yellow-400 dark:bg-yellow-500 text-black font-black flex items-center justify-center rounded-full shadow-lg border-2 border-white dark:border-[#050505]">#${index + 1}</div>
+                    <div class="bg-white dark:bg-gradient-to-b dark:from-neutral-900 dark:to-neutral-950 rounded-2xl p-1 overflow-hidden border border-yellow-500/30 group-hover:border-yellow-500 transition-colors duration-300 shadow-xl dark:shadow-none">
+                        <div class="relative h-40 overflow-hidden rounded-xl bg-gray-100 dark:bg-neutral-800">
+                            <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                            <div class="absolute bottom-3 left-3 text-white">
+                                <p class="font-bold text-lg leading-tight">${item.name}</p>
+                                <p class="text-yellow-400 text-sm font-bold flex items-center gap-1"><i data-lucide="trending-up" class="w-3.5 h-3.5"></i> ${item.sales} vendidos</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function renderMenu() {
+            const container = document.getElementById('products-grid');
+            const title = document.getElementById('menu-title');
+            const emptyState = document.getElementById('empty-state');
+
+            // Filtragem Avançada
+            const filtered = state.menu.filter(item => {
+                const matchesCategory = state.filter === "Todos" || item.category === state.filter;
+                const matchesTag = state.activeTag === null || (item.tags && item.tags.includes(state.activeTag));
+                
+                // Live Search Logic
+                const term = state.searchTerm.toLowerCase();
+                const matchesSearch = term === "" || 
+                    item.name.toLowerCase().includes(term) || 
+                    item.description.toLowerCase().includes(term);
+
+                return matchesCategory && matchesTag && matchesSearch;
+            });
+
+            // Atualiza Título
+            if (state.searchTerm) {
+                title.innerText = `RESULTADOS PARA: "${state.searchTerm}"`;
+            } else {
+                const tagName = state.activeTag ? dietaryTags.find(t => t.id === state.activeTag)?.label : '';
+                title.innerText = state.activeTag ? `FILTRADO POR: ${tagName}` : 'CARDÁPIO COMPLETO';
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            emptyState.classList.add('hidden');
+
+            container.innerHTML = filtered.map(item => {
+                let tagsHtml = '';
+                if (item.tags && item.tags.length > 0) {
+                    tagsHtml = `<div class="flex gap-1">` + 
+                        item.tags.map(tagId => {
+                            const t = dietaryTags.find(dt => dt.id === tagId);
+                            return t ? `<div class="w-6 h-6 rounded-full flex items-center justify-center ${t.bg} ${t.color} border ${t.border}" title="${t.label}"><i data-lucide="${t.icon}" class="w-3 h-3"></i></div>` : '';
+                        }).join('') + 
+                    `</div>`;
+                }
+
+                return `
+                <div onclick="openDetails(${item.id})" class="group relative bg-white dark:bg-[#0f0f0f] rounded-[2rem] p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-[#141414] transition-colors duration-500 border border-black/5 dark:border-white/5 hover:border-red-500/30 shadow-lg dark:shadow-none animate-fade-in">
+                    <div class="aspect-[4/3] rounded-[1.5rem] overflow-hidden mb-4 relative bg-gray-100 dark:bg-black">
+                        <div class="absolute inset-0 bg-red-600/0 group-hover:bg-red-600/10 transition-colors z-10 duration-500"></div>
+                        <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-in-out">
+                        
+                        <div class="absolute top-3 right-3 z-20 flex flex-col gap-2">
+                            <div class="bg-white/80 dark:bg-black/60 backdrop-blur-md px-2 py-1 rounded-lg flex items-center gap-1 border border-black/5 dark:border-white/10 self-end">
+                                <i data-lucide="star" class="w-3 h-3 text-yellow-500 fill-yellow-500"></i>
+                                <span class="text-xs font-bold text-neutral-900 dark:text-white">${item.rating}</span>
+                            </div>
+                            ${tagsHtml}
+                        </div>
+                    </div>
+
+                    <div class="px-2 pb-2">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-xl font-bold text-neutral-900 dark:text-white tracking-tight group-hover:text-red-600 dark:group-hover:text-red-500 transition-colors duration-300">${item.name}</h3>
+                            <span class="text-lg font-bold text-red-600 dark:text-red-500 bg-red-50 dark:bg-red-500/10 px-2 py-1 rounded-lg whitespace-nowrap">
+                                R$ ${Math.floor(item.price)}<span class="text-xs align-top">,${(item.price % 1).toFixed(2).split('.')[1]}</span>
+                            </span>
+                        </div>
+                        <p class="text-neutral-500 dark:text-neutral-500 text-sm leading-relaxed mb-6 line-clamp-2 h-10">${item.description}</p>
+                        <button class="w-full h-12 rounded-xl bg-neutral-100 dark:bg-white/5 hover:bg-neutral-900 dark:hover:bg-white text-neutral-900 dark:text-white hover:text-white dark:hover:text-black font-bold flex items-center justify-between px-4 transition-all duration-300 group/btn border border-black/5 dark:border-white/5 hover:border-transparent">
+                            <span class="text-sm">VER DETALHES</span>
+                            <div class="bg-white dark:bg-white/10 group-hover/btn:bg-white/20 dark:group-hover/btn:bg-black group-hover/btn:text-white p-1.5 rounded-lg transition-colors">
+                                <i data-lucide="plus" class="w-4 h-4"></i>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            `}).join('');
+            lucide.createIcons();
+        }
+
+        // --- Live Search ---
+
+        function handleSearch(value) {
+            state.searchTerm = value;
+            // Scroll to menu section when searching to show results immediately
+            if (value.length > 0) {
+                 const menuContainer = document.getElementById('full-menu-container');
+                 // Optional: smooth scroll only if not already there, but can be annoying if typing fast
+            }
+            renderBestSellers(); // Hide/Show
+            renderMenu();
+        }
+
+        // --- Detalhes do Produto ---
+
+        function openDetails(productId) {
+            const product = state.menu.find(p => p.id === productId);
+            if (!product) return;
+
+            state.selectedProduct = product;
+            state.selectedOptions = {}; // Reset options
+
+            // UI Changes
+            document.getElementById('main-view').classList.add('hidden');
+            document.getElementById('details-view').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            renderDetailsContent();
+        }
+
+        function closeDetails() {
+            state.selectedProduct = null;
+            document.getElementById('main-view').classList.remove('hidden');
+            document.getElementById('details-view').classList.add('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function toggleOption(optionId) {
+            if (state.selectedOptions[optionId]) {
+                delete state.selectedOptions[optionId];
+            } else {
+                state.selectedOptions[optionId] = true;
+            }
+            renderDetailsContent(); // Re-render to update UI and Price
+        }
+
+        function getCustomizedPrice(product, options) {
+            let total = product.price;
+            if (product.options) {
+                product.options.forEach(opt => {
+                    if (options[opt.id]) total += opt.price;
+                });
+            }
+            return total;
+        }
+
+        function renderDetailsContent() {
+            const product = state.selectedProduct;
+            const container = document.getElementById('details-content');
+            const currentPrice = getCustomizedPrice(product, state.selectedOptions);
+            const pairingItem = product.pairingId ? state.menu.find(i => i.id === product.pairingId) : null;
+
+            // Tags
+            let tagsHtml = '';
+            if (product.tags) {
+                tagsHtml = product.tags.map(tagId => {
+                    const t = dietaryTags.find(dt => dt.id === tagId);
+                    return t ? `<span class="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold ${t.bg} ${t.color} border ${t.border}"><i data-lucide="${t.icon}" class="w-3.5 h-3.5"></i> ${t.label}</span>` : '';
+                }).join('');
+            }
+
+            // Options
+            let optionsHtml = '';
+            if (product.options && product.options.length > 0) {
+                optionsHtml = `<div class="mb-8"><h3 class="text-sm font-bold text-neutral-500 uppercase tracking-wider mb-4 flex items-center gap-2"><i data-lucide="edit-3" class="w-3.5 h-3.5"></i> Personalize seu pedido</h3><div class="space-y-3">` +
+                product.options.map(opt => {
+                    const isSelected = !!state.selectedOptions[opt.id];
+                    return `
+                    <div onclick="toggleOption('${opt.id}')" class="flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all duration-200 group ${isSelected ? 'border-red-500 bg-red-50 dark:bg-red-500/10 shadow-md' : 'border-black/5 dark:border-white/10 bg-white dark:bg-white/5 hover:border-red-200 dark:hover:border-white/20'}">
+                        <div class="flex items-center gap-4">
+                            <div class="w-6 h-6 rounded-lg border flex items-center justify-center transition-colors ${isSelected ? 'bg-red-600 dark:bg-red-500 border-red-600 dark:border-red-500' : 'border-neutral-300 dark:border-neutral-600 group-hover:border-neutral-400'}">
+                                ${isSelected ? '<i data-lucide="check" class="w-3.5 h-3.5 text-white"></i>' : ''}
+                            </div>
+                            <span class="font-medium transition-colors ${isSelected ? 'text-red-700 dark:text-white' : 'text-neutral-700 dark:text-neutral-300'}">${opt.name}</span>
+                        </div>
+                        <span class="text-sm font-bold ${opt.price > 0 ? 'text-red-600 dark:text-red-500' : 'text-green-600 dark:text-green-500'}">${opt.price > 0 ? '+ R$ ' + opt.price.toFixed(2) : 'Grátis'}</span>
+                    </div>`;
+                }).join('') + `</div></div>`;
+            }
+
+            // Pairing
+            let pairingHtml = '';
+            if (pairingItem) {
+                pairingHtml = `
+                <div class="mb-8 animate-fade-in">
+                    <div onclick="openDetails(${pairingItem.id})" class="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-2xl flex items-center gap-4 cursor-pointer hover:bg-yellow-500/20 transition-colors group/pair">
+                        <div class="w-16 h-16 rounded-xl overflow-hidden shrink-0 border border-black/5 dark:border-white/10">
+                            <img src="${pairingItem.image}" class="w-full h-full object-cover group-hover/pair:scale-110 transition-transform duration-500">
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-xs font-bold text-yellow-600 dark:text-yellow-500 uppercase tracking-wider mb-1 flex items-center gap-1"><i data-lucide="sparkles" class="w-3 h-3"></i> Vai muito bem com</p>
+                            <h4 class="font-bold text-neutral-900 dark:text-white text-lg leading-tight group-hover/pair:text-red-500 transition-colors">${pairingItem.name}</h4>
+                            <span class="text-sm text-neutral-500 dark:text-neutral-400">+ R$ ${pairingItem.price.toFixed(2)}</span>
+                        </div>
+                        <div class="w-8 h-8 rounded-full bg-white dark:bg-white/10 flex items-center justify-center text-neutral-400 group-hover/pair:text-yellow-500 group-hover/pair:bg-white transition-all"><i data-lucide="chevron-right" class="w-4 h-4"></i></div>
+                    </div>
+                </div>`;
+            }
+
+            container.innerHTML = `
+                <!-- Imagem -->
+                <div class="lg:col-span-7 relative group lg:sticky lg:top-24">
+                    <div class="absolute inset-0 bg-gradient-to-tr from-red-600/20 to-transparent rounded-[3rem] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                    <div class="relative rounded-[3rem] overflow-hidden aspect-[4/3] border border-black/10 dark:border-white/10 shadow-2xl bg-white dark:bg-[#0f0f0f]">
+                        <img src="${product.image}" class="w-full h-full object-cover scale-105 group-hover:scale-100 transition-transform duration-700">
+                    </div>
+                </div>
+
+                <!-- Conteúdo -->
+                <div class="lg:col-span-5 flex flex-col">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="px-3 py-1 rounded-full border border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-500 text-xs font-bold uppercase tracking-wider">${product.category}</span>
+                        ${tagsHtml}
+                        <div class="flex items-center gap-1 text-yellow-500 dark:text-yellow-400 ml-auto lg:ml-0">
+                            <i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i>
+                            <span class="text-sm font-bold text-neutral-900 dark:text-white">${product.rating}</span>
+                        </div>
+                    </div>
+
+                    <h2 class="text-4xl md:text-6xl font-black mb-6 leading-[0.9] tracking-tighter text-neutral-900 dark:text-white">${product.name}</h2>
+                    <p class="text-neutral-600 dark:text-neutral-400 text-lg leading-relaxed mb-6">${product.description}</p>
+
+                    ${pairingHtml}
+                    ${optionsHtml}
+
+                    <div class="sticky bottom-4 z-20 mt-auto">
+                        <div class="bg-white/90 dark:bg-[#0f0f0f]/90 backdrop-blur-xl p-4 rounded-3xl border border-black/5 dark:border-white/10 shadow-2xl">
+                            <div class="flex items-center gap-6">
+                                <div>
+                                    <span class="block text-sm text-neutral-500 mb-1">Total do Item</span>
+                                    <span class="text-3xl font-black text-neutral-900 dark:text-white tracking-tight">
+                                        <span class="text-base align-top text-red-600 dark:text-red-500 font-bold mr-1">R$</span>${currentPrice.toFixed(2)}
+                                    </span>
+                                </div>
+                                <button onclick="addToCart()" class="flex-1 bg-neutral-900 dark:bg-white text-white dark:text-black hover:bg-red-600 dark:hover:bg-red-600 hover:text-white dark:hover:text-white h-16 rounded-2xl font-black text-lg flex items-center justify-center gap-2 transition-all duration-300 shadow-xl hover:shadow-red-900/40 hover:-translate-y-1">
+                                    ADICIONAR <i data-lucide="plus" class="w-6 h-6"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        // --- Carrinho ---
+
+        function toggleCart() {
+            const drawer = document.getElementById('cart-panel');
+            const overlay = document.getElementById('cart-overlay');
+            const cartDrawer = document.getElementById('cart-drawer');
+            
+            state.isCartOpen = !state.isCartOpen;
+            
+            if (state.isCartOpen) {
+                cartDrawer.classList.remove('pointer-events-none');
+                drawer.classList.remove('translate-x-full');
+                overlay.classList.remove('opacity-0');
+            } else {
+                cartDrawer.classList.add('pointer-events-none');
+                drawer.classList.add('translate-x-full');
+                overlay.classList.add('opacity-0');
+            }
+        }
+
+        function addToCart() {
+            const product = state.selectedProduct;
+            const options = state.selectedOptions;
+            
+            // Generate Unique ID
+            const activeOptionKeys = Object.keys(options).filter(k => options[k]);
+            const uniqueId = `${product.id}-${activeOptionKeys.sort().join('-')}`;
+            const price = getCustomizedPrice(product, options);
+            
+            const displayOptions = activeOptionKeys.map(key => product.options.find(o => o.id === key)).filter(Boolean);
+
+            const existing = state.cart.find(item => item.uniqueId === uniqueId);
+            if (existing) {
+                existing.quantity += 1;
+            } else {
+                state.cart.push({
+                    ...product,
+                    uniqueId,
+                    quantity: 1,
+                    price,
+                    selectedOptions: displayOptions
+                });
+            }
+
+            renderCart();
+            toggleCart(); // Open cart automatically
+            // Opcional: fechar detalhes
+            // closeDetails();
+        }
+
+        function removeFromCart(uniqueId) {
+            state.cart = state.cart.filter(item => item.uniqueId !== uniqueId);
+            renderCart();
+        }
+
+        function updateQuantity(uniqueId, delta) {
+            state.cart = state.cart.map(item => {
+                if (item.uniqueId === uniqueId) {
+                    const newQty = item.quantity + delta;
+                    return newQty > 0 ? { ...item, quantity: newQty } : item;
+                }
+                return item;
+            });
+            renderCart();
+        }
+
+        function renderCart() {
+            const container = document.getElementById('cart-items');
+            const countBadge = document.getElementById('cart-count');
+            const totalEl = document.getElementById('cart-total');
+            const checkoutBtn = document.getElementById('checkout-btn');
+
+            const total = state.cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+            const count = state.cart.reduce((acc, item) => acc + item.quantity, 0);
+
+            // Update Header Count
+            if (count > 0) {
+                countBadge.innerText = count;
+                countBadge.classList.remove('hidden');
+            } else {
+                countBadge.classList.add('hidden');
+            }
+
+            totalEl.innerText = total.toFixed(2);
+            
+            if (state.cart.length === 0) {
+                container.innerHTML = `
+                    <div class="h-full flex flex-col items-center justify-center text-neutral-500 gap-4 opacity-50">
+                        <div class="w-20 h-20 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center">
+                            <i data-lucide="shopping-cart" class="w-8 h-8"></i>
+                        </div>
+                        <p class="font-medium">Sua sacola está vazia</p>
+                    </div>`;
+                checkoutBtn.disabled = true;
+                checkoutBtn.classList.add('bg-gray-200', 'dark:bg-white/5', 'text-neutral-400', 'cursor-not-allowed');
+                checkoutBtn.classList.remove('bg-green-600', 'hover:bg-green-500', 'text-white', 'shadow-xl');
+            } else {
+                checkoutBtn.disabled = false;
+                checkoutBtn.classList.remove('bg-gray-200', 'dark:bg-white/5', 'text-neutral-400', 'cursor-not-allowed');
+                checkoutBtn.classList.add('bg-green-600', 'hover:bg-green-500', 'text-white', 'shadow-xl');
+
+                container.innerHTML = state.cart.map(item => `
+                    <div class="flex gap-5 items-start group animate-fade-in">
+                        <div class="w-20 h-20 rounded-2xl overflow-hidden bg-gray-100 dark:bg-neutral-900 shrink-0 mt-1 border border-black/5 dark:border-transparent">
+                            <img src="${item.image}" class="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity">
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-start mb-1">
+                                <h4 class="font-bold text-neutral-900 dark:text-white text-lg leading-tight">${item.name}</h4>
+                                <button onclick="removeFromCart('${item.uniqueId}')" class="text-neutral-400 hover:text-red-500 transition-colors">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                            
+                            ${item.selectedOptions && item.selectedOptions.length > 0 
+                                ? `<div class="flex flex-wrap gap-1 mb-2">` + 
+                                  item.selectedOptions.map(opt => `<span class="text-xs text-neutral-500 dark:text-neutral-400 bg-gray-100 dark:bg-white/5 px-2 py-0.5 rounded border border-black/5 dark:border-white/5">${opt.name}</span>`).join('') +
+                                  `</div>` 
+                                : ''}
+
+                            <p class="text-red-600 dark:text-red-500 font-bold mb-3">R$ ${(item.price * item.quantity).toFixed(2)}</p>
+                            
+                            <div class="flex items-center gap-4 bg-gray-100 dark:bg-white/5 w-max px-3 py-1.5 rounded-lg border border-black/5 dark:border-white/5">
+                                <button onclick="updateQuantity('${item.uniqueId}', -1)" class="text-neutral-600 dark:text-white hover:text-red-500 text-lg leading-none pb-0.5">-</button>
+                                <span class="text-sm font-bold text-neutral-900 dark:text-white w-4 text-center">${item.quantity}</span>
+                                <button onclick="updateQuantity('${item.uniqueId}', 1)" class="text-neutral-600 dark:text-white hover:text-green-500 text-lg leading-none pb-0.5">+</button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            lucide.createIcons();
+        }
+
+        function checkoutWhatsApp() {
+            if (state.cart.length === 0) return;
+            const total = state.cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+            
+            let message = "*PEDIDO - BLACK BURGER*\n\n";
+            state.cart.forEach(item => {
+                message += `${item.quantity}x ${item.name}`;
+                if (item.selectedOptions && item.selectedOptions.length > 0) {
+                    message += `\n   Obs: ${item.selectedOptions.map(opt => opt.name).join(', ')}`;
+                }
+                message += ` - R$ ${(item.price * item.quantity).toFixed(2)}\n----------------\n`;
+            });
+            message += `\n*Total: R$ ${total.toFixed(2)}*`;
+            
+            window.open(`https://wa.me/5500000000000?text=${encodeURIComponent(message)}`, '_blank');
+        }
+
+        // --- Filtros & Admin ---
+
+        function setFilter(cat) {
+            state.filter = cat;
+            renderCategories();
+            renderBestSellers(); // Re-check visibility
+            renderMenu();
+        }
+
+        function setTag(tagId) {
+            state.activeTag = state.activeTag === tagId ? null : tagId;
+            renderFilters();
+            renderBestSellers(); // Re-check visibility
+            renderMenu();
+        }
+
+        function toggleAdmin() {
+            state.isAdminMode = !state.isAdminMode;
+            const btn = document.getElementById('admin-btn');
+            const panel = document.getElementById('admin-panel');
+            
+            if (state.isAdminMode) {
+                btn.classList.add('text-red-500', 'bg-red-500/10');
+                panel.classList.remove('hidden');
+            } else {
+                btn.classList.remove('text-red-500', 'bg-red-500/10');
+                panel.classList.add('hidden');
+            }
+        }
+
+        function handleAddItem(e) {
+            e.preventDefault();
+            const name = document.getElementById('admin-name').value;
+            const price = parseFloat(document.getElementById('admin-price').value);
+            const image = document.getElementById('admin-image').value;
+            const desc = document.getElementById('admin-desc').value;
+            const cat = document.getElementById('admin-cat').value;
+
+            if (!name || !price) return;
+
+            const product = {
+                id: Date.now(),
+                name, 
+                description: desc,
+                price,
+                category: cat,
+                image: image || "https://placehold.co/400x300/1a1a1a/red?text=Sem+Imagem",
+                rating: 5.0, time: "15-20 min", calories: "N/A", sales: 0, tags: [], options: []
+            };
+
+            state.menu.push(product);
+            alert("Produto adicionado!");
+            
+            // Reset form
+            document.getElementById('admin-name').value = '';
+            document.getElementById('admin-price').value = '';
+            document.getElementById('admin-image').value = '';
+            document.getElementById('admin-desc').value = '';
+            
+            renderMenu();
+        }
+
+        // --- Tema (Dark Mode) ---
+        function initTheme() {
+            // Check localStorage or system preference
+            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+                updateThemeIcon(true);
+            } else {
+                document.documentElement.classList.remove('dark');
+                updateThemeIcon(false);
+            }
+        }
+
+        function toggleTheme() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.theme = 'light';
+                updateThemeIcon(false);
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.theme = 'dark';
+                updateThemeIcon(true);
+            }
+        }
+
+        function updateThemeIcon(isDark) {
+            const icon = document.getElementById('theme-icon');
+            icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+            lucide.createIcons();
+        }
+
+    </script>
+</body>
+</html>
