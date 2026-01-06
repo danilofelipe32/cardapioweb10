@@ -277,7 +277,7 @@
             </div>
         </div>
 
-        <!-- NEW: Upsell Modal -->
+        <!-- Upsell Modal -->
         <div id="upsell-modal" class="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 backdrop-blur-sm hidden animate-fade-in p-4">
             <div class="bg-white dark:bg-[#111] w-full max-w-sm rounded-3xl shadow-2xl border border-white/10 relative overflow-hidden">
                 <div class="relative h-40 bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center">
@@ -298,6 +298,48 @@
                             Não, obrigado
                         </button>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NEW: Payment Method Modal -->
+        <div id="payment-modal" class="fixed inset-0 z-[80] flex items-center justify-center bg-black/80 backdrop-blur-sm hidden animate-fade-in p-4">
+            <div class="bg-white dark:bg-[#111] w-full max-w-sm rounded-3xl shadow-2xl border border-white/10 relative">
+                <div class="p-6 border-b border-black/5 dark:border-white/5 flex justify-between items-center">
+                    <h3 class="text-lg font-black text-neutral-900 dark:text-white">Forma de Pagamento</h3>
+                    <button onclick="document.getElementById('payment-modal').classList.add('hidden')" class="text-neutral-400 hover:text-black dark:hover:text-white">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+                <div class="p-6 space-y-3">
+                    <button onclick="finalizeOrder('Cartão de Crédito')" class="w-full flex items-center justify-between p-4 rounded-xl border border-black/10 dark:border-white/10 hover:border-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all group">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="credit-card" class="text-neutral-500 dark:text-neutral-400 group-hover:text-red-600"></i>
+                            <span class="font-bold text-neutral-700 dark:text-white group-hover:text-red-700 dark:group-hover:text-red-400">Cartão de Crédito</span>
+                        </div>
+                        <i data-lucide="chevron-right" class="w-4 h-4 text-neutral-400"></i>
+                    </button>
+                    <button onclick="finalizeOrder('Cartão de Débito')" class="w-full flex items-center justify-between p-4 rounded-xl border border-black/10 dark:border-white/10 hover:border-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all group">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="credit-card" class="text-neutral-500 dark:text-neutral-400 group-hover:text-red-600"></i>
+                            <span class="font-bold text-neutral-700 dark:text-white group-hover:text-red-700 dark:group-hover:text-red-400">Cartão de Débito</span>
+                        </div>
+                        <i data-lucide="chevron-right" class="w-4 h-4 text-neutral-400"></i>
+                    </button>
+                    <button onclick="finalizeOrder('PIX')" class="w-full flex items-center justify-between p-4 rounded-xl border border-black/10 dark:border-white/10 hover:border-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 transition-all group">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="zap" class="text-neutral-500 dark:text-neutral-400 group-hover:text-green-600"></i>
+                            <span class="font-bold text-neutral-700 dark:text-white group-hover:text-green-700 dark:group-hover:text-green-400">PIX</span>
+                        </div>
+                        <i data-lucide="chevron-right" class="w-4 h-4 text-neutral-400"></i>
+                    </button>
+                    <button onclick="finalizeOrder('Dinheiro')" class="w-full flex items-center justify-between p-4 rounded-xl border border-black/10 dark:border-white/10 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all group">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="banknote" class="text-neutral-500 dark:text-neutral-400 group-hover:text-blue-600"></i>
+                            <span class="font-bold text-neutral-700 dark:text-white group-hover:text-blue-700 dark:group-hover:text-blue-400">Dinheiro</span>
+                        </div>
+                        <i data-lucide="chevron-right" class="w-4 h-4 text-neutral-400"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -753,7 +795,8 @@
             selectedOrder: null,
             productToDeleteId: null,
             currentTable: null,
-            pendingUpsellItem: null // Novo estado para upsell
+            pendingUpsellItem: null, // Novo estado para upsell
+            pendingCheckout: null // Novo estado para checkout temporário
         };
 
         // --- Inicialização ---
@@ -1260,17 +1303,32 @@
         // --- Checkout com Salvar Pedido ---
         function checkoutWhatsApp() {
             if (state.cart.length === 0) return;
-            const total = state.cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
             
-            // Solicitar dados do cliente
+            // 1. Solicitar Nome (Sempre pede)
             const clientName = prompt("Por favor, digite seu nome:");
-            if (!clientName) return; 
+            if (!clientName) return; // Cancela se não digitar nome
 
+            // 2. Solicitar Endereço (Apenas se NÃO for mesa)
             let address = "";
             if (!state.currentTable) {
-                address = prompt("Por favor, digite seu endereço completo:");
-                if (!address) return; 
+                address = prompt("Por favor, digite seu endereço completo para entrega:");
+                if (!address) return; // Cancela se não digitar endereço no delivery
             }
+
+            // Armazena dados temporariamente
+            state.pendingCheckout = {
+                clientName: clientName,
+                address: address
+            };
+
+            // Abre Modal de Pagamento
+            document.getElementById('payment-modal').classList.remove('hidden');
+        }
+
+        // Função de Finalização Real
+        function finalizeOrder(paymentMethod) {
+            const { clientName, address } = state.pendingCheckout;
+            const total = state.cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
 
             // Cria o pedido para o Admin
             const newOrder = {
@@ -1281,7 +1339,8 @@
                 items: JSON.parse(JSON.stringify(state.cart)), 
                 table: state.currentTable, 
                 clientName: clientName,
-                address: address
+                address: address,
+                paymentMethod: paymentMethod // Salva método no admin
             };
 
             state.orders.unshift(newOrder);
@@ -1289,15 +1348,15 @@
             // Monta msg WhatsApp
             let message = "";
             if(state.currentTable) {
-                message += `📍 *PEDIDO MESA ${state.currentTable}*\n`;
+                message += `📍 *PEDIDO MESA ${state.currentTable} - BLACK BURGER*\n`;
             } else {
-                message += "🛵 *NOVO PEDIDO DELIVERY*\n";
+                message += "🛵 *NOVO PEDIDO DELIVERY - BLACK BURGER*\n";
             }
             
             message += `👤 *Cliente:* ${clientName}\n`;
             if (address) message += `📍 *Endereço:* ${address}\n`;
+            
             message += `\n🛒 *RESUMO DO PEDIDO:*\n`;
-
             state.cart.forEach(item => {
                 message += `▪️ ${item.quantity}x ${item.name}`;
                 if (item.selectedOptions && item.selectedOptions.length > 0) {
@@ -1307,13 +1366,18 @@
             });
             
             message += `\n💰 *Total: R$ ${total.toFixed(2)}*`;
+            message += `\n💳 *Pagamento:* ${paymentMethod}`;
             
+            // Abre WhatsApp
             window.open(`https://wa.me/5584999780963?text=${encodeURIComponent(message)}`, '_blank');
             
+            // Limpa tudo
             state.cart = [];
+            state.pendingCheckout = null;
             saveData();
             renderCart();
             toggleCart();
+            document.getElementById('payment-modal').classList.add('hidden');
         }
 
         // --- SISTEMA ADMINISTRATIVO ---
