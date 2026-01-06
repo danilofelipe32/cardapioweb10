@@ -19,6 +19,7 @@
                         'fade-in': 'fadeIn 0.5s ease-out',
                         'slide-up': 'slideUp 0.5s ease-out',
                         'pulse-slow': 'pulseInterval 5s ease-in-out infinite',
+                        'float': 'float 3s ease-in-out infinite',
                     },
                     keyframes: {
                         fadeIn: {
@@ -33,6 +34,10 @@
                              '0%, 100%': { transform: 'scale(1)', filter: 'brightness(1)' },
                              '10%': { transform: 'scale(1.02)', filter: 'brightness(1.1)' },
                              '20%': { transform: 'scale(1)' }
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-5px)' },
                         }
                     }
                 }
@@ -91,6 +96,11 @@
         input[type=range]:focus {
             outline: none; 
         }
+        
+        /* Smooth Image Loading */
+        img {
+            transition: opacity 0.3s ease-in-out;
+        }
     </style>
 </head>
 <body class="text-neutral-900 transition-colors duration-300 dark:text-gray-100 font-sans selection:bg-red-500/30 selection:text-red-900 dark:selection:text-red-200 bg-transparent">
@@ -106,43 +116,43 @@
         <div class="absolute inset-0 bg-gray-100/90 dark:bg-black/85 backdrop-blur-[2px] transition-colors duration-300"></div>
         
         <!-- Partículas Sutis -->
-        <div class="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-orange-600/20 blur-[100px] rounded-full mix-blend-overlay"></div>
-        <div class="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-red-900/20 blur-[120px] rounded-full mix-blend-overlay"></div>
+        <div class="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-orange-600/20 blur-[100px] rounded-full mix-blend-overlay animate-pulse-slow"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-red-900/20 blur-[120px] rounded-full mix-blend-overlay animate-pulse-slow" style="animation-delay: 2s;"></div>
     </div>
 
     <!-- App Container -->
     <div id="app" class="relative min-h-screen flex flex-col">
         
         <!-- Aviso de Mesa Identificada -->
-        <div id="table-badge" class="hidden bg-green-600 text-white text-center py-1 text-xs font-bold uppercase tracking-widest sticky top-0 z-[60]">
+        <div id="table-badge" class="hidden bg-green-600 text-white text-center py-1 text-xs font-bold uppercase tracking-widest sticky top-0 z-[60] shadow-md animate-slide-up">
             <i data-lucide="map-pin" class="inline w-3 h-3 mb-0.5 mr-1"></i> Mesa <span id="table-number-display"></span> Identificada
         </div>
 
         <!-- Header -->
-        <header class="sticky top-0 z-50 w-full bg-white/80 dark:bg-black/70 backdrop-blur-xl border-b border-black/5 dark:border-white/5 transition-colors duration-300 shadow-sm transition-top duration-300" id="main-header">
+        <header class="sticky top-0 z-50 w-full bg-white/80 dark:bg-black/70 backdrop-blur-xl border-b border-black/5 dark:border-white/5 transition-all duration-300 shadow-sm" id="main-header">
             <div class="max-w-7xl mx-auto px-4 h-20 flex justify-between items-center">
                 <div class="flex items-center gap-3 cursor-pointer group" onclick="closeDetails()">
-                    <div class="bg-gradient-to-tr from-red-600 to-red-500 p-2.5 rounded-xl shadow-[0_0_20px_rgba(220,38,38,0.3)] group-hover:scale-105 transition-transform duration-300">
+                    <div class="bg-gradient-to-tr from-red-600 to-red-500 p-2.5 rounded-xl shadow-[0_0_20px_rgba(220,38,38,0.3)] group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 ease-out">
                         <i data-lucide="chef-hat" class="text-white w-5 h-5"></i>
                     </div>
                     <div class="flex flex-col -space-y-1">
                         <span class="text-xs font-bold text-neutral-400 dark:text-neutral-500 tracking-[0.2em] uppercase">The Original</span>
-                        <h1 class="text-2xl font-black tracking-tighter text-neutral-900 dark:text-white">
-                            BLACK<span class="text-red-600 dark:text-red-500">BURGER</span>
+                        <h1 class="text-2xl font-black tracking-tighter text-neutral-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-500 transition-colors">
+                            BLACK<span class="text-red-600 dark:text-red-500 group-hover:text-neutral-900 dark:group-hover:text-white transition-colors">BURGER</span>
                         </h1>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-2 md:gap-6">
-                    <button onclick="toggleTheme()" class="p-2 rounded-full text-neutral-500 hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+                    <button onclick="toggleTheme()" class="p-2 rounded-full text-neutral-500 hover:bg-black/5 dark:hover:bg-white/10 transition-all hover:scale-110 active:scale-95">
                         <i id="theme-icon" data-lucide="moon" class="w-5 h-5"></i>
                     </button>
 
                     <button onclick="toggleCart()" class="flex items-center gap-3 group relative p-2 md:p-0">
                         <span class="hidden md:block text-sm font-medium text-neutral-500 dark:text-neutral-400 group-hover:text-black dark:group-hover:text-white transition-colors">Seu Pedido</span>
-                        <div class="relative bg-black/5 dark:bg-white/5 group-hover:bg-red-600 dark:group-hover:bg-red-600 group-hover:text-white text-neutral-900 dark:text-white p-2.5 md:p-3 rounded-2xl transition-all duration-300 border border-black/5 dark:border-white/5 group-hover:border-red-500 group-hover:shadow-[0_0_20px_rgba(220,38,38,0.4)]">
+                        <div class="relative bg-black/5 dark:bg-white/5 group-hover:bg-red-600 dark:group-hover:bg-red-600 group-hover:text-white text-neutral-900 dark:text-white p-2.5 md:p-3 rounded-2xl transition-all duration-300 border border-black/5 dark:border-white/5 group-hover:border-red-500 group-hover:shadow-[0_0_20px_rgba(220,38,38,0.4)] group-hover:-translate-y-1">
                             <i data-lucide="shopping-cart" class="w-5 h-5"></i>
-                            <span id="cart-count" class="absolute -top-1.5 -right-1.5 bg-white text-red-600 text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-full shadow-lg border border-red-100 hidden">0</span>
+                            <span id="cart-count" class="absolute -top-1.5 -right-1.5 bg-white text-red-600 text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-full shadow-lg border border-red-100 hidden animate-bounce">0</span>
                         </div>
                     </button>
                 </div>
@@ -166,23 +176,23 @@
             </section>
 
             <!-- Sticky Controls Section -->
-            <section class="sticky top-20 z-40 bg-white/80 dark:bg-black/70 backdrop-blur-md border-y border-black/5 dark:border-white/5 shadow-sm transition-colors duration-300 py-4" id="controls-section">
+            <section class="sticky top-20 z-40 bg-white/80 dark:bg-black/70 backdrop-blur-md border-y border-black/5 dark:border-white/5 shadow-sm transition-all duration-300 py-4" id="controls-section">
                 <div class="max-w-7xl mx-auto px-4 space-y-4">
                     
                     <!-- Search Bar -->
-                    <div class="relative max-w-md mx-auto w-full transition-all duration-300" id="search-container">
+                    <div class="relative max-w-md mx-auto w-full transition-all duration-300 group" id="search-container">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i data-lucide="search" class="h-5 w-5 text-neutral-400"></i>
+                            <i data-lucide="search" class="h-5 w-5 text-neutral-400 group-focus-within:text-red-500 transition-colors"></i>
                         </div>
                         <input 
                             type="text" 
                             id="search-input"
                             placeholder="Toque para buscar e filtrar..." 
-                            class="block w-full pl-10 pr-10 py-3 border border-black/5 dark:border-white/10 rounded-xl leading-5 bg-white/90 dark:bg-white/10 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all sm:text-sm shadow-sm backdrop-blur-sm"
+                            class="block w-full pl-10 pr-10 py-3 border border-black/5 dark:border-white/10 rounded-xl leading-5 bg-white/90 dark:bg-white/10 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all sm:text-sm shadow-sm backdrop-blur-sm focus:shadow-lg focus:scale-[1.02]"
                             oninput="handleSearch(this.value)"
                             onfocus="openSearchMode()"
                         >
-                        <button onclick="closeSearchMode()" id="search-close-btn" class="absolute inset-y-0 right-0 pr-3 flex items-center hidden text-neutral-400 hover:text-red-500 transition-colors">
+                        <button onclick="closeSearchMode()" id="search-close-btn" class="absolute inset-y-0 right-0 pr-3 flex items-center hidden text-neutral-400 hover:text-red-500 transition-colors hover:rotate-90 duration-200">
                             <i data-lucide="x" class="h-5 w-5"></i>
                         </button>
                     </div>
@@ -203,7 +213,7 @@
                     <i data-lucide="flame" class="animate-pulse w-6 h-6 fill-current"></i>
                     <h3 class="text-xl font-black uppercase tracking-wider text-neutral-900 dark:text-white drop-shadow-sm">MAIS PEDIDOS</h3>
                 </div>
-                <div id="best-sellers-grid" class="flex overflow-x-auto gap-6 pb-4 no-scrollbar snap-x -mx-4 px-4 md:mx-0 md:px-0"></div>
+                <div id="best-sellers-grid" class="flex overflow-x-auto gap-6 pb-6 pt-2 no-scrollbar snap-x -mx-4 px-4 md:mx-0 md:px-0"></div>
             </section>
 
             <!-- Full Menu Grid -->
@@ -238,26 +248,26 @@
                                 </span>
                             </div>
                             <p class="text-neutral-500 text-xs">
-                                &copy; 2024 Black Burger. Feito com <i data-lucide="heart" class="inline w-3 h-3 text-red-500 fill-current"></i>
+                                &copy; 2024 Black Burger. Feito com <i data-lucide="heart" class="inline w-3 h-3 text-red-500 fill-current animate-pulse"></i>
                             </p>
                         </div>
 
                         <!-- Socials -->
                         <div class="flex items-center gap-4">
-                            <a href="#" class="w-10 h-10 rounded-full bg-black/5 dark:bg-white/5 hover:bg-red-600 dark:hover:bg-red-600 hover:text-white dark:text-white flex items-center justify-center transition-all duration-300 transform hover:scale-110">
+                            <a href="#" class="w-10 h-10 rounded-full bg-black/5 dark:bg-white/5 hover:bg-red-600 dark:hover:bg-red-600 hover:text-white dark:text-white flex items-center justify-center transition-all duration-300 transform hover:scale-110 hover:-translate-y-1">
                                 <i data-lucide="instagram" class="w-4 h-4"></i>
                             </a>
-                            <a href="#" class="w-10 h-10 rounded-full bg-black/5 dark:bg-white/5 hover:bg-blue-600 dark:hover:bg-blue-600 hover:text-white dark:text-white flex items-center justify-center transition-all duration-300 transform hover:scale-110">
+                            <a href="#" class="w-10 h-10 rounded-full bg-black/5 dark:bg-white/5 hover:bg-blue-600 dark:hover:bg-blue-600 hover:text-white dark:text-white flex items-center justify-center transition-all duration-300 transform hover:scale-110 hover:-translate-y-1">
                                 <i data-lucide="facebook" class="w-4 h-4"></i>
                             </a>
-                            <a href="#" class="w-10 h-10 rounded-full bg-black/5 dark:bg-white/5 hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black dark:text-white flex items-center justify-center transition-all duration-300 transform hover:scale-110">
+                            <a href="#" class="w-10 h-10 rounded-full bg-black/5 dark:bg-white/5 hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black dark:text-white flex items-center justify-center transition-all duration-300 transform hover:scale-110 hover:-translate-y-1">
                                 <i data-lucide="twitter" class="w-4 h-4"></i>
                             </a>
                         </div>
 
                         <!-- Admin Link -->
-                        <button onclick="toggleLoginModal()" class="text-xs font-bold text-neutral-400 hover:text-red-600 transition-colors uppercase tracking-widest flex items-center gap-2">
-                            <i data-lucide="lock" class="w-3 h-3"></i> Admin
+                        <button onclick="toggleLoginModal()" class="text-xs font-bold text-neutral-400 hover:text-red-600 transition-colors uppercase tracking-widest flex items-center gap-2 group">
+                            <i data-lucide="lock" class="w-3 h-3 group-hover:scale-110 transition-transform"></i> Admin
                         </button>
                     </div>
                 </div>
@@ -268,7 +278,7 @@
         <div id="details-view" class="hidden flex-1 animate-fade-in relative z-20">
             <div class="max-w-7xl mx-auto px-4 py-8">
                 <button onclick="closeDetails()" class="group flex items-center gap-2 text-neutral-500 hover:text-black dark:hover:text-white mb-8 transition-colors font-medium text-sm">
-                    <div class="p-2 rounded-full bg-black/5 dark:bg-white/10 group-hover:bg-black/10 dark:group-hover:bg-white/20 transition-colors">
+                    <div class="p-2 rounded-full bg-black/5 dark:bg-white/10 group-hover:bg-black/10 dark:group-hover:bg-white/20 transition-all group-hover:-translate-x-1">
                         <i data-lucide="arrow-left" class="w-4 h-4"></i>
                     </div>
                     VOLTAR AO MENU
@@ -277,34 +287,34 @@
             </div>
         </div>
 
-        <!-- NEW: Upsell Modal -->
+        <!-- Upsell Modal -->
         <div id="upsell-modal" class="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 backdrop-blur-sm hidden animate-fade-in p-4">
-            <div class="bg-white dark:bg-[#111] w-full max-w-sm rounded-3xl shadow-2xl border border-white/10 relative overflow-hidden">
-                <div class="relative h-40 bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center">
-                    <img src="https://images.unsplash.com/photo-1621532822165-27a3c3167198?auto=format&fit=crop&q=80&w=400" class="absolute inset-0 w-full h-full object-cover opacity-80" alt="Combo">
+            <div class="bg-white dark:bg-[#111] w-full max-w-sm rounded-3xl shadow-2xl border border-white/10 relative overflow-hidden transform scale-95 opacity-0 transition-all duration-300" id="upsell-modal-content">
+                <div class="relative h-40 bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1621532822165-27a3c3167198?auto=format&fit=crop&q=80&w=400" class="absolute inset-0 w-full h-full object-cover opacity-80 hover:scale-110 transition-transform duration-700" alt="Combo">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                     <div class="relative z-10 text-center p-4">
                         <span class="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full uppercase tracking-wider mb-2 inline-block animate-pulse">Oferta Especial</span>
-                        <h3 class="text-2xl font-black text-white leading-none">Turbine seu pedido!</h3>
+                        <h3 class="text-2xl font-black text-white leading-none drop-shadow-md">Turbine seu pedido!</h3>
                     </div>
                 </div>
                 <div class="p-6 text-center">
                     <p class="text-neutral-600 dark:text-neutral-300 font-medium mb-6">Que tal adicionar um acompanhamento por um preço especial?</p>
                     <div class="flex flex-col gap-3">
-                        <button onclick="acceptUpsell('fries')" class="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-3.5 rounded-xl shadow-lg transition-all flex items-center justify-between px-4 group">
+                        <button onclick="acceptUpsell('fries')" class="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-3.5 rounded-xl shadow-lg transition-all flex items-center justify-between px-4 group hover:-translate-y-1">
                             <span class="flex items-center gap-2"><i data-lucide="utensils" class="w-4 h-4"></i> Batata Frita</span>
-                            <span class="bg-black/10 px-2 py-1 rounded-lg text-xs">+ R$ 5,00</span>
+                            <span class="bg-black/10 px-2 py-1 rounded-lg text-xs font-black">+ R$ 5,00</span>
                         </button>
-                        <button onclick="acceptUpsell('drink')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all flex items-center justify-between px-4 group">
+                        <button onclick="acceptUpsell('drink')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all flex items-center justify-between px-4 group hover:-translate-y-1">
                             <span class="flex items-center gap-2"><i data-lucide="cup-soda" class="w-4 h-4"></i> Bebida Gelada</span>
-                            <span class="bg-white/20 px-2 py-1 rounded-lg text-xs">+ R$ 6,00</span>
+                            <span class="bg-white/20 px-2 py-1 rounded-lg text-xs font-black">+ R$ 6,00</span>
                         </button>
-                        <button onclick="acceptUpsell('combo')" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-green-600/20 transition-all flex items-center justify-between px-4 transform active:scale-95 group">
+                        <button onclick="acceptUpsell('combo')" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-green-600/20 transition-all flex items-center justify-between px-4 transform active:scale-95 group hover:-translate-y-1">
                             <span class="flex items-center gap-2"><i data-lucide="check-circle" class="w-5 h-5"></i> COMBO COMPLETO</span>
-                            <span class="bg-white/20 px-2 py-1 rounded-lg text-xs">+ R$ 10,00</span>
+                            <span class="bg-white/20 px-2 py-1 rounded-lg text-xs font-black">+ R$ 10,00</span>
                         </button>
                         
-                        <button onclick="declineUpsell()" class="w-full bg-transparent hover:bg-black/5 dark:hover:bg-white/5 text-neutral-400 font-bold py-2 rounded-xl transition-all text-xs mt-2">
+                        <button onclick="declineUpsell()" class="w-full bg-transparent hover:bg-black/5 dark:hover:bg-white/5 text-neutral-400 font-bold py-2 rounded-xl transition-all text-xs mt-2 hover:text-black dark:hover:text-white">
                             Não, obrigado
                         </button>
                     </div>
@@ -314,41 +324,41 @@
 
         <!-- Payment Method Modal -->
         <div id="payment-modal" class="fixed inset-0 z-[80] flex items-center justify-center bg-black/80 backdrop-blur-sm hidden animate-fade-in p-4">
-            <div class="bg-white dark:bg-[#111] w-full max-w-sm rounded-3xl shadow-2xl border border-white/10 relative">
+            <div class="bg-white dark:bg-[#111] w-full max-w-sm rounded-3xl shadow-2xl border border-white/10 relative transform scale-95 opacity-0 transition-all duration-300" id="payment-modal-content">
                 <div class="p-6 border-b border-black/5 dark:border-white/5 flex justify-between items-center">
                     <h3 class="text-lg font-black text-neutral-900 dark:text-white">Forma de Pagamento</h3>
-                    <button onclick="document.getElementById('payment-modal').classList.add('hidden')" class="text-neutral-400 hover:text-black dark:hover:text-white">
+                    <button onclick="closePaymentModal()" class="text-neutral-400 hover:text-black dark:hover:text-white hover:rotate-90 transition-transform">
                         <i data-lucide="x" class="w-5 h-5"></i>
                     </button>
                 </div>
                 <div class="p-6 space-y-3">
-                    <button onclick="finalizeOrder('Cartão de Crédito')" class="w-full flex items-center justify-between p-4 rounded-xl border border-black/10 dark:border-white/10 hover:border-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all group">
+                    <button onclick="finalizeOrder('Cartão de Crédito')" class="w-full flex items-center justify-between p-4 rounded-xl border border-black/10 dark:border-white/10 hover:border-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all group hover:-translate-y-1 shadow-sm hover:shadow-md">
                         <div class="flex items-center gap-3">
-                            <i data-lucide="credit-card" class="text-neutral-500 dark:text-neutral-400 group-hover:text-red-600"></i>
-                            <span class="font-bold text-neutral-700 dark:text-white group-hover:text-red-700 dark:group-hover:text-red-400">Cartão de Crédito</span>
+                            <i data-lucide="credit-card" class="text-neutral-500 dark:text-neutral-400 group-hover:text-red-600 transition-colors"></i>
+                            <span class="font-bold text-neutral-700 dark:text-white group-hover:text-red-700 dark:group-hover:text-red-400 transition-colors">Cartão de Crédito</span>
                         </div>
-                        <i data-lucide="chevron-right" class="w-4 h-4 text-neutral-400"></i>
+                        <i data-lucide="chevron-right" class="w-4 h-4 text-neutral-400 group-hover:translate-x-1 transition-transform"></i>
                     </button>
-                    <button onclick="finalizeOrder('Cartão de Débito')" class="w-full flex items-center justify-between p-4 rounded-xl border border-black/10 dark:border-white/10 hover:border-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all group">
+                    <button onclick="finalizeOrder('Cartão de Débito')" class="w-full flex items-center justify-between p-4 rounded-xl border border-black/10 dark:border-white/10 hover:border-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all group hover:-translate-y-1 shadow-sm hover:shadow-md">
                         <div class="flex items-center gap-3">
-                            <i data-lucide="credit-card" class="text-neutral-500 dark:text-neutral-400 group-hover:text-red-600"></i>
-                            <span class="font-bold text-neutral-700 dark:text-white group-hover:text-red-700 dark:group-hover:text-red-400">Cartão de Débito</span>
+                            <i data-lucide="credit-card" class="text-neutral-500 dark:text-neutral-400 group-hover:text-red-600 transition-colors"></i>
+                            <span class="font-bold text-neutral-700 dark:text-white group-hover:text-red-700 dark:group-hover:text-red-400 transition-colors">Cartão de Débito</span>
                         </div>
-                        <i data-lucide="chevron-right" class="w-4 h-4 text-neutral-400"></i>
+                        <i data-lucide="chevron-right" class="w-4 h-4 text-neutral-400 group-hover:translate-x-1 transition-transform"></i>
                     </button>
-                    <button onclick="finalizeOrder('PIX')" class="w-full flex items-center justify-between p-4 rounded-xl border border-black/10 dark:border-white/10 hover:border-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 transition-all group">
+                    <button onclick="finalizeOrder('PIX')" class="w-full flex items-center justify-between p-4 rounded-xl border border-black/10 dark:border-white/10 hover:border-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 transition-all group hover:-translate-y-1 shadow-sm hover:shadow-md">
                         <div class="flex items-center gap-3">
-                            <i data-lucide="zap" class="text-neutral-500 dark:text-neutral-400 group-hover:text-green-600"></i>
-                            <span class="font-bold text-neutral-700 dark:text-white group-hover:text-green-700 dark:group-hover:text-green-400">PIX</span>
+                            <i data-lucide="zap" class="text-neutral-500 dark:text-neutral-400 group-hover:text-green-600 transition-colors"></i>
+                            <span class="font-bold text-neutral-700 dark:text-white group-hover:text-green-700 dark:group-hover:text-green-400 transition-colors">PIX</span>
                         </div>
-                        <i data-lucide="chevron-right" class="w-4 h-4 text-neutral-400"></i>
+                        <i data-lucide="chevron-right" class="w-4 h-4 text-neutral-400 group-hover:translate-x-1 transition-transform"></i>
                     </button>
-                    <button onclick="finalizeOrder('Dinheiro')" class="w-full flex items-center justify-between p-4 rounded-xl border border-black/10 dark:border-white/10 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all group">
+                    <button onclick="finalizeOrder('Dinheiro')" class="w-full flex items-center justify-between p-4 rounded-xl border border-black/10 dark:border-white/10 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all group hover:-translate-y-1 shadow-sm hover:shadow-md">
                         <div class="flex items-center gap-3">
-                            <i data-lucide="banknote" class="text-neutral-500 dark:text-neutral-400 group-hover:text-blue-600"></i>
-                            <span class="font-bold text-neutral-700 dark:text-white group-hover:text-blue-700 dark:group-hover:text-blue-400">Dinheiro</span>
+                            <i data-lucide="banknote" class="text-neutral-500 dark:text-neutral-400 group-hover:text-blue-600 transition-colors"></i>
+                            <span class="font-bold text-neutral-700 dark:text-white group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors">Dinheiro</span>
                         </div>
-                        <i data-lucide="chevron-right" class="w-4 h-4 text-neutral-400"></i>
+                        <i data-lucide="chevron-right" class="w-4 h-4 text-neutral-400 group-hover:translate-x-1 transition-transform"></i>
                     </button>
                 </div>
             </div>
@@ -357,12 +367,12 @@
         <!-- Login Modal (Overlay) -->
         <div id="login-modal" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm hidden animate-fade-in p-4">
             <div class="bg-white dark:bg-[#111] w-full max-w-md p-8 rounded-3xl shadow-2xl border border-white/10 relative">
-                <button onclick="toggleLoginModal()" class="absolute top-4 right-4 text-neutral-400 hover:text-white transition-colors">
+                <button onclick="toggleLoginModal()" class="absolute top-4 right-4 text-neutral-400 hover:text-white transition-colors hover:rotate-90">
                     <i data-lucide="x" class="w-6 h-6"></i>
                 </button>
                 
                 <div class="text-center mb-8">
-                    <i data-lucide="shield-check" class="w-12 h-12 text-red-600 mx-auto mb-4"></i>
+                    <i data-lucide="shield-check" class="w-12 h-12 text-red-600 mx-auto mb-4 animate-bounce"></i>
                     <h2 class="text-2xl font-black text-neutral-900 dark:text-white">ACESSO RESTRITO</h2>
                     <p class="text-neutral-500 text-sm">Área administrativa do Black Burger</p>
                 </div>
@@ -376,7 +386,7 @@
                         <label class="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Senha</label>
                         <input type="password" id="login-pass" class="w-full bg-gray-50 dark:bg-black/50 border border-black/10 dark:border-white/10 p-4 rounded-xl text-neutral-900 dark:text-white focus:border-red-500 outline-none transition-colors" placeholder="••••">
                     </div>
-                    <button type="submit" class="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-red-600/20 transition-all flex items-center justify-center gap-2">
+                    <button type="submit" class="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-red-600/20 transition-all flex items-center justify-center gap-2 transform hover:scale-105 active:scale-95">
                         ENTRAR <i data-lucide="arrow-right" class="w-5 h-5"></i>
                     </button>
                 </form>
@@ -389,7 +399,7 @@
             <div class="sticky top-0 z-50 bg-white/90 dark:bg-black/90 backdrop-blur-xl border-b border-black/5 dark:border-white/5 shadow-sm">
                 <div class="max-w-7xl mx-auto px-4 h-20 flex justify-between items-center">
                     <div class="flex items-center gap-3">
-                        <div class="bg-red-600 p-2 rounded-lg">
+                        <div class="bg-red-600 p-2 rounded-lg shadow-lg shadow-red-600/20">
                             <i data-lucide="layout-dashboard" class="text-white w-5 h-5"></i>
                         </div>
                         <div>
@@ -397,7 +407,7 @@
                             <h1 class="text-xl font-black text-neutral-900 dark:text-white">Gerenciar</h1>
                         </div>
                     </div>
-                    <button onclick="toggleAdminDashboard()" class="px-4 py-2 rounded-xl border border-black/10 dark:border-white/10 text-neutral-600 dark:text-neutral-400 hover:bg-black/5 dark:hover:bg-white/5 font-bold text-sm transition-colors flex items-center gap-2">
+                    <button onclick="toggleAdminDashboard()" class="px-4 py-2 rounded-xl border border-black/10 dark:border-white/10 text-neutral-600 dark:text-neutral-400 hover:bg-black/5 dark:hover:bg-white/5 font-bold text-sm transition-colors flex items-center gap-2 hover:text-red-500">
                         <i data-lucide="log-out" class="w-4 h-4"></i> SAIR
                     </button>
                 </div>
@@ -433,48 +443,53 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div class="space-y-2">
                                     <label class="text-xs font-bold text-neutral-500 uppercase">Nome do Produto</label>
-                                    <input id="admin-name" class="w-full bg-gray-50 dark:bg-black/50 border border-black/10 dark:border-white/10 p-3 rounded-xl text-neutral-900 dark:text-white focus:border-red-500 outline-none" required />
+                                    <input id="admin-name" class="w-full bg-gray-50 dark:bg-black/50 border border-black/10 dark:border-white/10 p-3 rounded-xl text-neutral-900 dark:text-white focus:border-red-500 outline-none transition-colors focus:shadow-md" required />
                                 </div>
                                 <div class="space-y-2">
                                     <label class="text-xs font-bold text-neutral-500 uppercase">Preço (R$)</label>
-                                    <input id="admin-price" type="number" step="0.10" class="w-full bg-gray-50 dark:bg-black/50 border border-black/10 dark:border-white/10 p-3 rounded-xl text-neutral-900 dark:text-white focus:border-red-500 outline-none" required />
+                                    <input id="admin-price" type="number" step="0.10" class="w-full bg-gray-50 dark:bg-black/50 border border-black/10 dark:border-white/10 p-3 rounded-xl text-neutral-900 dark:text-white focus:border-red-500 outline-none transition-colors focus:shadow-md" required />
                                 </div>
                             </div>
                             
                             <div class="space-y-2">
                                 <label class="text-xs font-bold text-neutral-500 uppercase">URL da Imagem</label>
-                                <input id="admin-image" class="w-full bg-gray-50 dark:bg-black/50 border border-black/10 dark:border-white/10 p-3 rounded-xl text-neutral-900 dark:text-white focus:border-red-500 outline-none" placeholder="https://..." />
+                                <input id="admin-image" class="w-full bg-gray-50 dark:bg-black/50 border border-black/10 dark:border-white/10 p-3 rounded-xl text-neutral-900 dark:text-white focus:border-red-500 outline-none transition-colors focus:shadow-md" placeholder="https://..." />
                             </div>
 
                             <div class="space-y-2">
                                 <label class="text-xs font-bold text-neutral-500 uppercase">Descrição</label>
-                                <textarea id="admin-desc" class="w-full bg-gray-50 dark:bg-black/50 border border-black/10 dark:border-white/10 p-3 rounded-xl text-neutral-900 dark:text-white focus:border-red-500 outline-none h-24 resize-none"></textarea>
+                                <textarea id="admin-desc" class="w-full bg-gray-50 dark:bg-black/50 border border-black/10 dark:border-white/10 p-3 rounded-xl text-neutral-900 dark:text-white focus:border-red-500 outline-none h-24 resize-none transition-colors focus:shadow-md"></textarea>
                             </div>
 
                             <!-- Checkboxes para Tags -->
                             <div class="flex flex-wrap gap-4 py-2">
-                                <label class="flex items-center gap-2 cursor-pointer bg-gray-50 dark:bg-white/5 px-3 py-2 rounded-lg border border-black/5 dark:border-white/5 hover:border-red-500/50 transition-colors">
+                                <label class="flex items-center gap-2 cursor-pointer bg-gray-50 dark:bg-white/5 px-3 py-2 rounded-lg border border-black/5 dark:border-white/5 hover:border-red-500/50 transition-all hover:-translate-y-0.5">
                                     <input type="checkbox" id="admin-tag-spicy" class="w-4 h-4 accent-red-600 rounded cursor-pointer">
                                     <span class="text-sm font-bold text-neutral-700 dark:text-neutral-300 flex items-center gap-1"><i data-lucide="flame" class="w-3 h-3"></i> Picante</span>
                                 </label>
-                                <label class="flex items-center gap-2 cursor-pointer bg-gray-50 dark:bg-white/5 px-3 py-2 rounded-lg border border-black/5 dark:border-white/5 hover:border-green-500/50 transition-colors">
+                                <label class="flex items-center gap-2 cursor-pointer bg-gray-50 dark:bg-white/5 px-3 py-2 rounded-lg border border-black/5 dark:border-white/5 hover:border-green-500/50 transition-all hover:-translate-y-0.5">
                                     <input type="checkbox" id="admin-tag-vegan" class="w-4 h-4 accent-green-600 rounded cursor-pointer">
                                     <span class="text-sm font-bold text-neutral-700 dark:text-neutral-300 flex items-center gap-1"><i data-lucide="leaf" class="w-3 h-3"></i> Vegano</span>
                                 </label>
-                                <label class="flex items-center gap-2 cursor-pointer bg-gray-50 dark:bg-white/5 px-3 py-2 rounded-lg border border-black/5 dark:border-white/5 hover:border-blue-500/50 transition-colors">
+                                <label class="flex items-center gap-2 cursor-pointer bg-gray-50 dark:bg-white/5 px-3 py-2 rounded-lg border border-black/5 dark:border-white/5 hover:border-blue-500/50 transition-all hover:-translate-y-0.5">
                                     <input type="checkbox" id="admin-tag-gluten_free" class="w-4 h-4 accent-blue-500 rounded cursor-pointer">
                                     <span class="text-sm font-bold text-neutral-700 dark:text-neutral-300 flex items-center gap-1"><i data-lucide="wheat-off" class="w-3 h-3"></i> Sem Glúten</span>
                                 </label>
                             </div>
 
                             <div class="flex flex-col md:flex-row gap-4 items-end">
-                                <div class="flex-1 space-y-2 w-full">
-                                    <label class="text-xs font-bold text-neutral-500 uppercase">Categoria</label>
-                                    <select id="admin-cat" class="w-full bg-gray-50 dark:bg-black/50 border border-black/10 dark:border-white/10 p-3 rounded-xl text-neutral-900 dark:text-white focus:border-red-500 outline-none cursor-pointer">
-                                        <option>Sanduíches</option><option>Bebidas</option><option>Acompanhamentos</option>
+                                <!-- Adicionar Categoria -->
+                                <div class="flex-1 space-y-2 w-full relative">
+                                    <div class="flex justify-between items-center">
+                                        <label class="text-xs font-bold text-neutral-500 uppercase">Categoria</label>
+                                        <button type="button" onclick="addNewCategory()" class="text-xs text-blue-600 font-bold hover:underline bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded hover:bg-blue-100 transition-colors">+ Nova</button>
+                                    </div>
+                                    <select id="admin-cat" class="w-full bg-gray-50 dark:bg-black/50 border border-black/10 dark:border-white/10 p-3 rounded-xl text-neutral-900 dark:text-white focus:border-red-500 outline-none cursor-pointer transition-colors focus:shadow-md">
+                                        <!-- Options injected by JS -->
                                     </select>
                                 </div>
-                                <button type="submit" id="save-btn" class="w-full md:w-auto bg-green-600 hover:bg-green-500 text-white font-bold py-3 px-8 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-green-600/20">
+
+                                <button type="submit" id="save-btn" class="w-full md:w-auto bg-green-600 hover:bg-green-500 text-white font-bold py-3 px-8 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-green-600/20 hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0">
                                     <i data-lucide="save" class="w-4 h-4"></i> SALVAR PRODUTO
                                 </button>
                                 <button type="button" onclick="resetForm()" class="w-full md:w-auto bg-gray-200 dark:bg-white/10 text-neutral-600 dark:text-white font-bold py-3 px-6 rounded-xl transition-all hover:bg-gray-300 dark:hover:bg-white/20">
@@ -514,7 +529,7 @@
                     <!-- Stats Cards -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         <!-- Receita -->
-                        <div class="bg-white dark:bg-[#111] p-6 rounded-2xl shadow-lg border border-black/5 dark:border-white/5 flex items-center justify-between group hover:-translate-y-1 transition-transform">
+                        <div class="bg-white dark:bg-[#111] p-6 rounded-2xl shadow-lg border border-black/5 dark:border-white/5 flex items-center justify-between group hover:-translate-y-1 transition-transform cursor-default">
                             <div>
                                 <p class="text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-1">Receita Total</p>
                                 <h4 class="text-2xl font-black text-neutral-900 dark:text-white" id="dash-total-revenue">R$ 0,00</h4>
@@ -525,7 +540,7 @@
                         </div>
 
                         <!-- Pedidos -->
-                        <div class="bg-white dark:bg-[#111] p-6 rounded-2xl shadow-lg border border-black/5 dark:border-white/5 flex items-center justify-between group hover:-translate-y-1 transition-transform">
+                        <div class="bg-white dark:bg-[#111] p-6 rounded-2xl shadow-lg border border-black/5 dark:border-white/5 flex items-center justify-between group hover:-translate-y-1 transition-transform cursor-default">
                             <div>
                                 <p class="text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-1">Total Pedidos</p>
                                 <h4 class="text-2xl font-black text-neutral-900 dark:text-white" id="dash-total-count">0</h4>
@@ -536,7 +551,7 @@
                         </div>
 
                         <!-- Ticket Médio -->
-                        <div class="bg-white dark:bg-[#111] p-6 rounded-2xl shadow-lg border border-black/5 dark:border-white/5 flex items-center justify-between group hover:-translate-y-1 transition-transform">
+                        <div class="bg-white dark:bg-[#111] p-6 rounded-2xl shadow-lg border border-black/5 dark:border-white/5 flex items-center justify-between group hover:-translate-y-1 transition-transform cursor-default">
                             <div>
                                 <p class="text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-1">Ticket Médio</p>
                                 <h4 class="text-2xl font-black text-neutral-900 dark:text-white" id="dash-avg-ticket">R$ 0,00</h4>
@@ -547,7 +562,7 @@
                         </div>
 
                         <!-- Conversão -->
-                        <div class="bg-white dark:bg-[#111] p-6 rounded-2xl shadow-lg border border-black/5 dark:border-white/5 flex items-center justify-between group hover:-translate-y-1 transition-transform">
+                        <div class="bg-white dark:bg-[#111] p-6 rounded-2xl shadow-lg border border-black/5 dark:border-white/5 flex items-center justify-between group hover:-translate-y-1 transition-transform cursor-default">
                             <div>
                                 <p class="text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-1">Entregues</p>
                                 <h4 class="text-2xl font-black text-neutral-900 dark:text-white" id="dash-conversion">0%</h4>
@@ -787,13 +802,12 @@
             { id: 'gluten_free', label: 'Sem Glúten', icon: 'wheat-off', color: 'text-blue-400', border: 'border-blue-400/30', bg: 'bg-blue-400/10' },
         ];
 
-        const categories = ["Todos", "Sanduíches", "Acompanhamentos", "Bebidas"];
-
         // --- Estado Global ---
         let state = {
             menu: [...initialMenu],
             cart: [],
             orders: [], // Array de pedidos
+            categories: ["Sanduíches", "Bebidas", "Acompanhamentos"], // Default Categories
             filter: "Todos",
             activeTag: null,
             searchTerm: "",
@@ -805,13 +819,13 @@
             selectedOrder: null,
             productToDeleteId: null,
             currentTable: null,
-            pendingUpsellItem: null, // Novo estado para upsell
-            pendingCheckout: null // Novo estado para checkout temporário
+            pendingUpsellItem: null,
+            pendingCheckout: null
         };
 
         // --- Inicialização ---
         document.addEventListener('DOMContentLoaded', () => {
-            checkTableParam(); // Verifica se há mesa na URL
+            checkTableParam();
             loadData(); 
             lucide.createIcons();
             initTheme();
@@ -820,33 +834,33 @@
             renderBestSellers();
             renderMenu();
             renderCart();
-            
-            // --- MOCK ORDERS (Para visualização) ---
+            renderCategoryOptions(); 
+
+            // Mock Data if empty
             if (state.orders.length === 0) {
-                const today = new Date();
-                const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
-                
-                state.orders.push(
-                    {
-                        id: 1025,
-                        date: today.toISOString(),
-                        total: 58.90,
-                        status: 'Pendente',
-                        items: [
-                            { name: 'Monster Bacon', quantity: 1, price: 32.90, selectedOptions: [{name: 'Bacon Extra'}]},
-                            { name: 'Classic Salad', quantity: 1, price: 24.50, selectedOptions: []}
-                        ]
-                    },
-                    {
-                        id: 1024,
-                        date: yesterday.toISOString(),
-                        total: 32.90,
-                        status: 'Entregue',
-                        items: [
-                            { name: 'Monster Bacon', quantity: 1, price: 32.90, selectedOptions: []}
-                        ]
-                    }
-                );
+                 const today = new Date();
+                 const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
+                 state.orders.push(
+                     {
+                         id: 1025,
+                         date: today.toISOString(),
+                         total: 58.90,
+                         status: 'Pendente',
+                         items: [
+                             { name: 'Monster Bacon', quantity: 1, price: 32.90, selectedOptions: [{name: 'Bacon Extra'}]},
+                             { name: 'Classic Salad', quantity: 1, price: 24.50, selectedOptions: []}
+                         ]
+                     },
+                     {
+                         id: 1024,
+                         date: yesterday.toISOString(),
+                         total: 32.90,
+                         status: 'Entregue',
+                         items: [
+                             { name: 'Monster Bacon', quantity: 1, price: 32.90, selectedOptions: []}
+                         ]
+                     }
+                 );
             }
         });
 
@@ -859,13 +873,11 @@
                 document.getElementById('table-number-display').innerText = table;
                 document.getElementById('table-badge').classList.remove('hidden');
                 
-                // Ajusta o padding do header para não cobrir o aviso
                 document.getElementById('main-header').classList.remove('top-0');
                 document.getElementById('main-header').classList.add('top-6');
                 document.getElementById('controls-section').classList.remove('top-20');
                 document.getElementById('controls-section').classList.add('top-26');
 
-                // NEW: Update cart display
                 const cartTableInfo = document.getElementById('cart-table-info');
                 const cartTableNum = document.getElementById('cart-table-num');
                 if(cartTableInfo && cartTableNum) {
@@ -880,6 +892,7 @@
             const savedMenu = localStorage.getItem('blackBurgerMenu');
             const savedCart = localStorage.getItem('blackBurgerCart');
             const savedOrders = localStorage.getItem('blackBurgerOrders');
+            const savedCategories = localStorage.getItem('blackBurgerCategories');
             
             if (savedMenu) {
                 state.menu = JSON.parse(savedMenu);
@@ -897,18 +910,55 @@
             } else {
                 state.orders = [];
             }
+
+            if (savedCategories) {
+                state.categories = JSON.parse(savedCategories);
+            }
         }
 
         function saveData() {
             localStorage.setItem('blackBurgerMenu', JSON.stringify(state.menu));
             localStorage.setItem('blackBurgerCart', JSON.stringify(state.cart));
             localStorage.setItem('blackBurgerOrders', JSON.stringify(state.orders));
+            localStorage.setItem('blackBurgerCategories', JSON.stringify(state.categories));
+        }
+
+        // --- Categories Management ---
+        function renderCategoryOptions() {
+            const select = document.getElementById('admin-cat');
+            if(!select) return;
+            select.innerHTML = state.categories.map(c => `<option value="${c}">${c}</option>`).join('');
+        }
+
+        function addNewCategory() {
+            const newCat = prompt("Nome da nova categoria:");
+            if (newCat && newCat.trim() !== "") {
+                const cat = newCat.trim();
+                if (!state.categories.includes(cat)) {
+                    state.categories.push(cat);
+                    saveData();
+                    renderCategoryOptions(); 
+                    renderCategories(); 
+                    
+                    // Select the new one
+                    setTimeout(() => {
+                         const select = document.getElementById('admin-cat');
+                         if(select) select.value = cat;
+                    }, 100);
+
+                    alert(`Categoria "${cat}" adicionada com sucesso!`);
+                } else {
+                    alert("Esta categoria já existe.");
+                }
+            }
         }
 
         // --- Renderização (Cliente) ---
         function renderCategories() {
             const container = document.getElementById('categories-container');
-            container.innerHTML = categories.map(cat => `
+            const allCats = ["Todos", ...state.categories];
+            
+            container.innerHTML = allCats.map(cat => `
                 <button onclick="setFilter('${cat}')" 
                     class="px-6 py-2.5 rounded-full text-sm font-bold uppercase tracking-wider transition-all duration-300 whitespace-nowrap flex-shrink-0
                     ${state.filter === cat 
@@ -959,7 +1009,7 @@
             section.classList.remove('hidden');
 
             const container = document.getElementById('best-sellers-grid');
-            const popular = [...state.menu].filter(item => item.active !== false).slice(0, 5);
+            const popular = [...state.menu].filter(item => item.active !== false).sort((a, b) => (b.sales || 0) - (a.sales || 0)).slice(0, 5);
             
             if (popular.length === 0) {
                 container.innerHTML = `<p class="text-neutral-500 w-full text-center">Nenhum item em destaque.</p>`;
@@ -970,14 +1020,17 @@
                 <div onclick="openDetails(${item.id})" class="flex-shrink-0 w-28 md:w-32 snap-center flex flex-col items-center group cursor-pointer animate-fade-in">
                     <div class="relative mb-3">
                         <div class="absolute -top-1 -right-1 z-20 w-7 h-7 bg-yellow-500 text-black font-black flex items-center justify-center rounded-full shadow-lg border-2 border-white dark:border-[#050505] text-xs">#${index + 1}</div>
-                        <div class="w-24 h-24 md:w-28 md:h-28 rounded-full p-1 border-2 border-yellow-500/30 group-hover:border-yellow-500 transition-all duration-300 shadow-lg dark:shadow-none bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm group-hover:scale-105">
+                        <div class="w-24 h-24 md:w-28 md:h-28 rounded-full p-1 border-2 border-yellow-500/30 group-hover:border-yellow-500 transition-all duration-500 ease-out shadow-lg dark:shadow-none bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm group-hover:scale-110 group-hover:rotate-3 group-hover:shadow-yellow-500/40">
                             <div class="w-full h-full rounded-full overflow-hidden relative">
-                                <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/400x300/1a1a1a/red?text=Indispon%C3%ADvel'">
+                                <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/400x300/1a1a1a/red?text=Imagem+Indispon%C3%ADvel'">
                             </div>
                         </div>
                     </div>
                     <div class="text-center w-full px-1">
                         <p class="font-bold text-xs md:text-sm leading-tight text-neutral-900 dark:text-white line-clamp-2 h-8 group-hover:text-red-500 transition-colors drop-shadow-sm">${item.name}</p>
+                        <p class="text-yellow-600 dark:text-yellow-500 text-[10px] md:text-xs font-bold mt-1 flex items-center justify-center gap-1 opacity-80">
+                            <i data-lucide="trending-up" class="w-3 h-3"></i> ${item.sales}
+                        </p>
                     </div>
                 </div>
             `).join('');
@@ -1021,10 +1074,10 @@
                 }
 
                 return `
-                <div onclick="openDetails(${item.id})" class="group relative bg-white/90 dark:bg-[#0f0f0f]/80 backdrop-blur-md rounded-[2rem] p-4 cursor-pointer hover:bg-white dark:hover:bg-black transition-colors duration-500 border border-black/5 dark:border-white/5 hover:border-red-500/30 shadow-lg dark:shadow-none animate-fade-in">
+                <div onclick="openDetails(${item.id})" class="group relative bg-white/90 dark:bg-[#0f0f0f]/80 backdrop-blur-md rounded-[2rem] p-4 cursor-pointer hover:bg-white dark:hover:bg-black transition-all duration-500 border border-black/5 dark:border-white/5 hover:border-red-500/30 shadow-lg hover:shadow-2xl hover:shadow-red-500/10 hover:-translate-y-2 animate-fade-in">
                     <div class="aspect-[4/3] rounded-[1.5rem] overflow-hidden mb-4 relative bg-gray-100 dark:bg-black">
                         <div class="absolute inset-0 bg-red-600/0 group-hover:bg-red-600/10 transition-colors z-10 duration-500"></div>
-                        <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-in-out" onerror="this.src='https://placehold.co/400x300/1a1a1a/red?text=Indispon%C3%ADvel'">
+                        <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover transform group-hover:scale-110 group-hover:rotate-1 transition-transform duration-700 ease-in-out" onerror="this.src='https://placehold.co/400x300/1a1a1a/red?text=Imagem+Indispon%C3%ADvel'">
                         <div class="absolute top-3 right-3 z-20 flex flex-col items-end gap-1">
                             <div class="bg-white/80 dark:bg-black/60 backdrop-blur-md px-2 py-1 rounded-lg flex items-center gap-1 border border-black/5 dark:border-white/10 shadow-sm">
                                 <i data-lucide="star" class="w-3 h-3 text-yellow-500 fill-yellow-500"></i>
@@ -1041,7 +1094,7 @@
                             </span>
                         </div>
                         <p class="text-neutral-500 dark:text-neutral-500 text-sm leading-relaxed mb-6 line-clamp-2 h-10">${item.description}</p>
-                        <button class="w-full h-12 rounded-xl bg-neutral-100 dark:bg-white/5 hover:bg-neutral-900 dark:hover:bg-white text-neutral-900 dark:text-white hover:text-white dark:hover:text-black font-bold flex items-center justify-between px-4 transition-all duration-300 group/btn border border-black/5 dark:border-white/5 hover:border-transparent">
+                        <button class="w-full h-12 rounded-xl bg-neutral-100 dark:bg-white/5 hover:bg-neutral-900 dark:hover:bg-white text-neutral-900 dark:text-white hover:text-white dark:hover:text-black font-bold flex items-center justify-between px-4 transition-all duration-300 group/btn border border-black/5 dark:border-white/5 hover:border-transparent active:scale-95">
                             <span class="text-sm">VER DETALHES</span>
                             <div class="bg-white dark:bg-white/10 group-hover/btn:bg-white/20 dark:group-hover/btn:bg-black group-hover/btn:text-white p-1.5 rounded-lg transition-colors">
                                 <i data-lucide="plus" class="w-4 h-4"></i>
@@ -1134,12 +1187,12 @@
             }
 
             container.innerHTML = `
-                <div class="lg:col-span-7 relative group lg:sticky lg:top-24">
+                <div class="lg:col-span-7 relative group lg:sticky lg:top-24 animate-fade-in">
                     <div class="relative rounded-[3rem] overflow-hidden aspect-[4/3] border border-black/10 dark:border-white/10 shadow-2xl bg-white dark:bg-[#0f0f0f]">
-                        <img src="${product.image}" class="w-full h-full object-cover scale-105 group-hover:scale-100 transition-transform duration-700" onerror="this.src='https://placehold.co/600x400/1a1a1a/red?text=Indispon%C3%ADvel'">
+                        <img src="${product.image}" class="w-full h-full object-cover scale-105 group-hover:scale-100 transition-transform duration-700" onerror="this.src='https://placehold.co/600x400/1a1a1a/red?text=Imagem+Indispon%C3%ADvel'">
                     </div>
                 </div>
-                <div class="lg:col-span-5 flex flex-col">
+                <div class="lg:col-span-5 flex flex-col animate-slide-up">
                     <div class="flex items-center gap-3 mb-4">
                         <span class="px-3 py-1 rounded-full border border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-500 text-xs font-bold uppercase tracking-wider backdrop-blur-md">${product.category}</span>
                         <div class="flex items-center gap-1 text-yellow-500 dark:text-yellow-400 ml-auto lg:ml-0 drop-shadow-sm">
@@ -1159,7 +1212,7 @@
                                         <span class="text-base align-top text-red-600 dark:text-red-500 font-bold mr-1">R$</span>${currentPrice.toFixed(2)}
                                     </span>
                                 </div>
-                                <button onclick="addToCart()" class="flex-1 bg-neutral-900 dark:bg-white text-white dark:text-black hover:bg-red-600 dark:hover:bg-red-600 hover:text-white dark:hover:text-white h-16 rounded-2xl font-black text-lg flex items-center justify-center gap-2 transition-all duration-300 shadow-xl hover:shadow-red-900/40 hover:-translate-y-1">
+                                <button onclick="addToCart()" class="flex-1 bg-neutral-900 dark:bg-white text-white dark:text-black hover:bg-red-600 dark:hover:bg-red-600 hover:text-white dark:hover:text-white h-16 rounded-2xl font-black text-lg flex items-center justify-center gap-2 transition-all duration-300 shadow-xl hover:shadow-red-900/40 hover:-translate-y-1 active:scale-95">
                                     ADICIONAR <i data-lucide="plus" class="w-6 h-6"></i>
                                 </button>
                             </div>
@@ -1200,7 +1253,14 @@
             // Upsell Logic: Se for sanduíche, oferece batata
             if (product.category === 'Sanduíches') {
                 state.pendingUpsellItem = itemToAdd;
+                const modalContent = document.getElementById('upsell-modal-content');
                 document.getElementById('upsell-modal').classList.remove('hidden');
+                
+                // Animate entrance
+                setTimeout(() => {
+                    modalContent.classList.remove('scale-95', 'opacity-0');
+                    modalContent.classList.add('scale-100', 'opacity-100');
+                }, 10);
             } else {
                 confirmAddToCart(itemToAdd);
                 toggleCart();
@@ -1239,17 +1299,26 @@
                 confirmAddToCart(promoDrink);
             }
 
-            document.getElementById('upsell-modal').classList.add('hidden');
-            state.pendingUpsellItem = null;
+            closeUpsellModal();
             toggleCart();
         }
 
         function declineUpsell() {
             // Adiciona apenas o item principal
             confirmAddToCart(state.pendingUpsellItem);
-            document.getElementById('upsell-modal').classList.add('hidden');
-            state.pendingUpsellItem = null;
+            closeUpsellModal();
             toggleCart();
+        }
+
+        function closeUpsellModal() {
+            const modalContent = document.getElementById('upsell-modal-content');
+            modalContent.classList.remove('scale-100', 'opacity-100');
+            modalContent.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                document.getElementById('upsell-modal').classList.add('hidden');
+                state.pendingUpsellItem = null;
+            }, 300);
         }
 
         function confirmAddToCart(item) {
@@ -1348,7 +1417,26 @@
             };
 
             // Abre Modal de Pagamento
-            document.getElementById('payment-modal').classList.remove('hidden');
+            const paymentModal = document.getElementById('payment-modal');
+            const paymentContent = document.getElementById('payment-modal-content');
+            paymentModal.classList.remove('hidden');
+            
+            setTimeout(() => {
+                paymentContent.classList.remove('scale-95', 'opacity-0');
+                paymentContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function closePaymentModal() {
+            const paymentModal = document.getElementById('payment-modal');
+            const paymentContent = document.getElementById('payment-modal-content');
+            
+            paymentContent.classList.remove('scale-100', 'opacity-100');
+            paymentContent.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                paymentModal.classList.add('hidden');
+            }, 300);
         }
 
         // Função de Finalização Real
@@ -1403,7 +1491,7 @@
             saveData();
             renderCart();
             toggleCart();
-            document.getElementById('payment-modal').classList.add('hidden');
+            closePaymentModal();
         }
 
         // --- SISTEMA ADMINISTRATIVO ---
