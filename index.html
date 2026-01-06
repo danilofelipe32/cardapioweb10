@@ -670,6 +670,13 @@
                 </div>
                 <div id="cart-items" class="flex-1 overflow-y-auto p-8 space-y-6"></div>
                 <div class="p-8 bg-gray-50 dark:bg-[#0f0f0f] border-t border-black/5 dark:border-white/5">
+                    
+                    <!-- NEW: Table Info inside Cart -->
+                    <div id="cart-table-info" class="hidden mb-4 p-3 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded-xl flex items-center justify-center gap-2 font-bold text-sm border border-green-200 dark:border-green-800">
+                        <i data-lucide="map-pin" class="w-4 h-4"></i>
+                        <span>Pedido para Mesa <span id="cart-table-num"></span></span>
+                    </div>
+
                     <div class="flex justify-between items-end mb-6">
                         <span class="text-neutral-500 dark:text-neutral-400 font-medium">Subtotal</span>
                         <span class="text-3xl font-black text-neutral-900 dark:text-white">
@@ -778,6 +785,14 @@
                 document.getElementById('main-header').classList.add('top-6');
                 document.getElementById('controls-section').classList.remove('top-20');
                 document.getElementById('controls-section').classList.add('top-26');
+
+                // NEW: Update cart display
+                const cartTableInfo = document.getElementById('cart-table-info');
+                const cartTableNum = document.getElementById('cart-table-num');
+                if(cartTableInfo && cartTableNum) {
+                    cartTableNum.innerText = table;
+                    cartTableInfo.classList.remove('hidden');
+                }
             }
         }
 
@@ -1655,6 +1670,7 @@
                 state.menu.push(newProduct);
             }
 
+            saveData(); // Save changes
             resetForm();
             renderAdminList();
             renderMenu();
