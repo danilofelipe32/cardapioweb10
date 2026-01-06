@@ -519,6 +519,25 @@
             </div>
         </div>
 
+        <!-- NEW: Delete Confirmation Modal -->
+        <div id="delete-confirmation-modal" class="fixed inset-0 z-[80] flex items-center justify-center bg-black/80 backdrop-blur-sm hidden animate-fade-in px-4">
+            <div class="bg-white dark:bg-[#111] w-full max-w-sm p-6 rounded-3xl shadow-2xl border border-white/10 text-center transform transition-all scale-100">
+                <div class="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4 text-red-600 dark:text-red-500 animate-pulse">
+                    <i data-lucide="alert-triangle" class="w-8 h-8"></i>
+                </div>
+                <h3 class="text-xl font-black text-neutral-900 dark:text-white mb-2">Excluir Produto?</h3>
+                <p class="text-neutral-500 text-sm mb-6 leading-relaxed">Esta ação não pode ser desfeita. O item será removido permanentemente do cardápio.</p>
+                <div class="flex gap-3">
+                    <button onclick="closeDeleteModal()" class="flex-1 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-neutral-700 dark:text-white font-bold py-3 rounded-xl transition-colors border border-black/5 dark:border-white/5">
+                        CANCELAR
+                    </button>
+                    <button onclick="confirmDeleteProduct()" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl transition-colors shadow-lg shadow-red-600/20 flex items-center justify-center gap-2">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i> EXCLUIR
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Cart Drawer (Same as before) -->
         <div id="cart-drawer" class="fixed inset-0 z-50 pointer-events-none transition-all duration-500">
             <div id="cart-overlay" class="absolute inset-0 bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-500" onclick="toggleCart()"></div>
@@ -582,7 +601,8 @@
             adminView: 'products', // 'products' ou 'orders'
             selectedProduct: null,
             selectedOptions: {},
-            selectedOrder: null // Para o modal
+            selectedOrder: null, // Para o modal
+            productToDeleteId: null // Para o modal de exclusão
         };
 
         // --- Inicialização ---
@@ -703,13 +723,14 @@
                 return;
             }
 
+            // CORREÇÃO: Adicionado onerror nos img tags
             container.innerHTML = popular.map((item, index) => `
                 <div onclick="openDetails(${item.id})" class="flex-shrink-0 w-28 md:w-32 snap-center flex flex-col items-center group cursor-pointer animate-fade-in">
                     <div class="relative mb-3">
                         <div class="absolute -top-1 -right-1 z-20 w-7 h-7 bg-yellow-500 text-black font-black flex items-center justify-center rounded-full shadow-lg border-2 border-white dark:border-[#050505] text-xs">#${index + 1}</div>
                         <div class="w-24 h-24 md:w-28 md:h-28 rounded-full p-1 border-2 border-yellow-500/30 group-hover:border-yellow-500 transition-all duration-300 shadow-lg dark:shadow-none bg-white dark:bg-neutral-900 group-hover:scale-105">
                             <div class="w-full h-full rounded-full overflow-hidden relative">
-                                <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover">
+                                <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/400x300/1a1a1a/red?text=Imagem+Indispon%C3%ADvel'">
                             </div>
                         </div>
                     </div>
@@ -765,7 +786,7 @@
                 <div onclick="openDetails(${item.id})" class="group relative bg-white dark:bg-[#0f0f0f] rounded-[2rem] p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-[#141414] transition-colors duration-500 border border-black/5 dark:border-white/5 hover:border-red-500/30 shadow-lg dark:shadow-none animate-fade-in">
                     <div class="aspect-[4/3] rounded-[1.5rem] overflow-hidden mb-4 relative bg-gray-100 dark:bg-black">
                         <div class="absolute inset-0 bg-red-600/0 group-hover:bg-red-600/10 transition-colors z-10 duration-500"></div>
-                        <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-in-out">
+                        <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-in-out" onerror="this.src='https://placehold.co/400x300/1a1a1a/red?text=Imagem+Indispon%C3%ADvel'">
                         <div class="absolute top-3 right-3 z-20 flex flex-col items-end gap-1">
                             <div class="bg-white/80 dark:bg-black/60 backdrop-blur-md px-2 py-1 rounded-lg flex items-center gap-1 border border-black/5 dark:border-white/10 shadow-sm">
                                 <i data-lucide="star" class="w-3 h-3 text-yellow-500 fill-yellow-500"></i>
@@ -878,7 +899,7 @@
             container.innerHTML = `
                 <div class="lg:col-span-7 relative group lg:sticky lg:top-24">
                     <div class="relative rounded-[3rem] overflow-hidden aspect-[4/3] border border-black/10 dark:border-white/10 shadow-2xl bg-white dark:bg-[#0f0f0f]">
-                        <img src="${product.image}" class="w-full h-full object-cover scale-105 group-hover:scale-100 transition-transform duration-700">
+                        <img src="${product.image}" class="w-full h-full object-cover scale-105 group-hover:scale-100 transition-transform duration-700" onerror="this.src='https://placehold.co/600x400/1a1a1a/red?text=Imagem+Indispon%C3%ADvel'">
                     </div>
                 </div>
                 <div class="lg:col-span-5 flex flex-col">
@@ -985,7 +1006,7 @@
                 container.innerHTML = state.cart.map(item => `
                     <div class="flex gap-5 items-start group animate-fade-in">
                         <div class="w-20 h-20 rounded-2xl overflow-hidden bg-gray-100 dark:bg-neutral-900 shrink-0 mt-1 border border-black/5 dark:border-transparent">
-                            <img src="${item.image}" class="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity">
+                            <img src="${item.image}" class="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity" onerror="this.src='https://placehold.co/100x100/1a1a1a/red?text=Erro'">
                         </div>
                         <div class="flex-1">
                             <div class="flex justify-between items-start mb-1">
@@ -1262,7 +1283,7 @@
                     <td class="p-4 pl-6">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-lg overflow-hidden border border-black/10 dark:border-white/10">
-                                <img src="${item.image}" class="w-full h-full object-cover">
+                                <img src="${item.image}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/100x100/1a1a1a/red?text=Erro'">
                             </div>
                             <span class="font-bold text-neutral-900 dark:text-white">${item.name}</span>
                         </div>
@@ -1277,7 +1298,7 @@
                             <button onclick="editProduct(${item.id})" class="p-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors" title="Editar">
                                 <i data-lucide="pencil" class="w-4 h-4"></i>
                             </button>
-                            <button onclick="deleteProduct(${item.id})" class="p-2 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors" title="Excluir">
+                            <button onclick="openDeleteModal(${item.id})" class="p-2 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors" title="Excluir">
                                 <i data-lucide="trash-2" class="w-4 h-4"></i>
                             </button>
                         </div>
@@ -1299,14 +1320,28 @@
             }
         }
 
-        // Deletar Produto
-        function deleteProduct(id) {
-            if (confirm("Tem certeza que deseja remover este item?")) {
-                state.menu = state.menu.filter(p => p.id !== id);
+        // --- Lógica do Modal de Exclusão ---
+
+        function openDeleteModal(id) {
+            state.productToDeleteId = id;
+            document.getElementById('delete-confirmation-modal').classList.remove('hidden');
+        }
+
+        function closeDeleteModal() {
+            state.productToDeleteId = null;
+            document.getElementById('delete-confirmation-modal').classList.add('hidden');
+        }
+
+        function confirmDeleteProduct() {
+            if (state.productToDeleteId) {
+                state.menu = state.menu.filter(p => p.id !== state.productToDeleteId);
+                
+                // Atualiza todas as views
                 renderAdminList();
-                renderMenu(); // Atualiza a view principal também
+                renderMenu(); 
                 renderBestSellers();
             }
+            closeDeleteModal();
         }
 
         // Editar Produto (Preenche o formulário)
@@ -1321,12 +1356,25 @@
             document.getElementById('admin-desc').value = item.description;
             document.getElementById('admin-cat').value = item.category;
 
+            // Reset Tags Checkboxes
+            document.getElementById('admin-tag-spicy').checked = false;
+            document.getElementById('admin-tag-vegan').checked = false;
+            document.getElementById('admin-tag-gluten_free').checked = false;
+
+            // Check Tags based on item data
+            if (item.tags) {
+                if (item.tags.includes('spicy')) document.getElementById('admin-tag-spicy').checked = true;
+                if (item.tags.includes('vegan')) document.getElementById('admin-tag-vegan').checked = true;
+                if (item.tags.includes('gluten_free')) document.getElementById('admin-tag-gluten_free').checked = true;
+            }
+
             // Altera UI para modo edição
             document.getElementById('form-title').innerText = "Editar Item";
             document.getElementById('save-btn').innerHTML = `<i data-lucide="refresh-cw" class="w-4 h-4"></i> ATUALIZAR`;
             
             // Scroll para o topo do form
-            document.querySelector('#admin-dashboard').scrollTo({ top: 0, behavior: 'smooth' });
+            const dashboard = document.getElementById('admin-dashboard');
+            dashboard.scrollTo({ top: 0, behavior: 'smooth' });
             lucide.createIcons();
         }
 
@@ -1335,6 +1383,12 @@
             document.getElementById('edit-id').value = '';
             document.getElementById('form-title').innerText = "Adicionar Novo Item";
             document.getElementById('save-btn').innerHTML = `<i data-lucide="save" class="w-4 h-4"></i> SALVAR PRODUTO`;
+            
+            // Reset Tags Manually
+            document.getElementById('admin-tag-spicy').checked = false;
+            document.getElementById('admin-tag-vegan').checked = false;
+            document.getElementById('admin-tag-gluten_free').checked = false;
+            
             lucide.createIcons();
         }
 
@@ -1344,9 +1398,24 @@
             const id = document.getElementById('edit-id').value;
             const name = document.getElementById('admin-name').value;
             const price = parseFloat(document.getElementById('admin-price').value);
-            const image = document.getElementById('admin-image').value;
+            let image = document.getElementById('admin-image').value;
             const desc = document.getElementById('admin-desc').value;
             const cat = document.getElementById('admin-cat').value;
+
+            // CORREÇÃO IMGUR: Auto-converter links de post para links diretos de imagem
+            // Ex: https://imgur.com/codigo -> https://i.imgur.com/codigo.jpg
+            if (image && image.includes('imgur.com') && !image.includes('i.imgur.com')) {
+                 const match = image.match(/imgur\.com\/([a-zA-Z0-9]{5,})/);
+                 if (match && match[1] && !image.includes('/a/') && !image.includes('/gallery/')) {
+                     image = `https://i.imgur.com/${match[1]}.jpg`;
+                 }
+            }
+
+            // Capture Tags
+            const tags = [];
+            if (document.getElementById('admin-tag-spicy').checked) tags.push('spicy');
+            if (document.getElementById('admin-tag-vegan').checked) tags.push('vegan');
+            if (document.getElementById('admin-tag-gluten_free').checked) tags.push('gluten_free');
 
             if (id) {
                 // Atualizar Existente
@@ -1354,7 +1423,7 @@
                 if (index !== -1) {
                     state.menu[index] = {
                         ...state.menu[index],
-                        name, price, image, description: desc, category: cat
+                        name, price, image, description: desc, category: cat, tags: tags
                     };
                 }
             } else {
@@ -1366,7 +1435,9 @@
                     price,
                     category: cat,
                     image: image || "https://placehold.co/400x300/1a1a1a/red?text=Sem+Imagem",
-                    rating: 5.0, time: "N/A", calories: "N/A", sales: 0, tags: [], options: [],
+                    rating: 5.0, time: "N/A", calories: "N/A", sales: 0, 
+                    tags: tags, 
+                    options: [],
                     active: true // Default to active
                 };
                 state.menu.push(newProduct);
