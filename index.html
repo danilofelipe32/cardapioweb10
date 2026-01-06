@@ -625,7 +625,7 @@
             );
         });
 
-        // ... (Todas as funções de renderização do consumidor permanecem iguais)
+        // --- Funções de Renderização (Consumidor) ---
         function renderCategories() {
             const container = document.getElementById('categories-container');
             container.innerHTML = categories.map(cat => `
@@ -654,6 +654,21 @@
                 </button>
             `}).join('');
             lucide.createIcons();
+        }
+
+        // --- Filtros (Restaurados) ---
+        function setFilter(cat) {
+            state.filter = cat;
+            renderCategories();
+            renderBestSellers(); // Re-check visibility
+            renderMenu();
+        }
+
+        function setTag(tagId) {
+            state.activeTag = state.activeTag === tagId ? null : tagId;
+            renderFilters();
+            renderBestSellers(); // Re-check visibility
+            renderMenu();
         }
 
         function renderBestSellers() {
@@ -1086,16 +1101,21 @@
                 
                 // Date Filter
                 let matchDate = true;
+                
+                // CORREÇÃO: Criar datas baseadas nos componentes locais (Ano, Mês, Dia)
+                // para evitar problemas de fuso horário (UTC vs Local)
                 if (filterStart) {
-                    const start = new Date(filterStart);
-                    // Reset time part for pure date comparison if desired, or assume Start of Day
-                    start.setHours(0,0,0,0);
+                    const parts = filterStart.split('-');
+                    // new Date(ano, mes-1, dia) cria data à meia-noite local
+                    const start = new Date(parts[0], parts[1] - 1, parts[2]); 
                     matchDate = matchDate && oDate >= start;
                 }
+                
                 if (filterEnd) {
-                    const end = new Date(filterEnd);
-                    // End of Day
-                    end.setHours(23,59,59,999);
+                    const parts = filterEnd.split('-');
+                    const end = new Date(parts[0], parts[1] - 1, parts[2]);
+                    // Define o final do dia selecionado (23:59:59.999)
+                    end.setHours(23, 59, 59, 999);
                     matchDate = matchDate && oDate <= end;
                 }
 
