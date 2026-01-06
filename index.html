@@ -277,6 +277,31 @@
             </div>
         </div>
 
+        <!-- NEW: Upsell Modal -->
+        <div id="upsell-modal" class="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 backdrop-blur-sm hidden animate-fade-in p-4">
+            <div class="bg-white dark:bg-[#111] w-full max-w-sm rounded-3xl shadow-2xl border border-white/10 relative overflow-hidden">
+                <div class="relative h-40 bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center">
+                    <img src="https://images.unsplash.com/photo-1630384060421-a4323ceca041?auto=format&fit=crop&q=80&w=400" class="absolute inset-0 w-full h-full object-cover opacity-80" alt="Batata Frita">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                    <div class="relative z-10 text-center p-4">
+                        <span class="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full uppercase tracking-wider mb-2 inline-block animate-pulse">Oferta Especial</span>
+                        <h3 class="text-2xl font-black text-white leading-none">Turbine seu pedido!</h3>
+                    </div>
+                </div>
+                <div class="p-6 text-center">
+                    <p class="text-neutral-600 dark:text-neutral-300 font-medium mb-6">Que tal adicionar uma porção de <span class="text-orange-500 font-bold">Batata Frita Crocante</span> por apenas <span class="text-green-600 dark:text-green-500 font-bold">R$ 5,00</span>?</p>
+                    <div class="flex flex-col gap-3">
+                        <button onclick="acceptUpsell()" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-green-600/20 transition-all flex items-center justify-center gap-2 transform active:scale-95">
+                            <i data-lucide="check" class="w-5 h-5"></i> SIM, EU QUERO!
+                        </button>
+                        <button onclick="declineUpsell()" class="w-full bg-transparent hover:bg-black/5 dark:hover:bg-white/5 text-neutral-400 font-bold py-3 rounded-xl transition-all text-sm">
+                            Não, obrigado
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Login Modal (Overlay) -->
         <div id="login-modal" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm hidden animate-fade-in p-4">
             <div class="bg-white dark:bg-[#111] w-full max-w-md p-8 rounded-3xl shadow-2xl border border-white/10 relative">
@@ -727,7 +752,8 @@
             selectedOptions: {},
             selectedOrder: null,
             productToDeleteId: null,
-            currentTable: null // Nova variável para armazenar a mesa
+            currentTable: null,
+            pendingUpsellItem: null // Novo estado para upsell
         };
 
         // --- Inicialização ---
@@ -893,7 +919,7 @@
                         <div class="absolute -top-1 -right-1 z-20 w-7 h-7 bg-yellow-500 text-black font-black flex items-center justify-center rounded-full shadow-lg border-2 border-white dark:border-[#050505] text-xs">#${index + 1}</div>
                         <div class="w-24 h-24 md:w-28 md:h-28 rounded-full p-1 border-2 border-yellow-500/30 group-hover:border-yellow-500 transition-all duration-300 shadow-lg dark:shadow-none bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm group-hover:scale-105">
                             <div class="w-full h-full rounded-full overflow-hidden relative">
-                                <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/400x300/1a1a1a/red?text=Imagem+Indispon%C3%ADvel'">
+                                <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/400x300/1a1a1a/red?text=Indispon%C3%ADvel'">
                             </div>
                         </div>
                     </div>
@@ -945,7 +971,7 @@
                 <div onclick="openDetails(${item.id})" class="group relative bg-white/90 dark:bg-[#0f0f0f]/80 backdrop-blur-md rounded-[2rem] p-4 cursor-pointer hover:bg-white dark:hover:bg-black transition-colors duration-500 border border-black/5 dark:border-white/5 hover:border-red-500/30 shadow-lg dark:shadow-none animate-fade-in">
                     <div class="aspect-[4/3] rounded-[1.5rem] overflow-hidden mb-4 relative bg-gray-100 dark:bg-black">
                         <div class="absolute inset-0 bg-red-600/0 group-hover:bg-red-600/10 transition-colors z-10 duration-500"></div>
-                        <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-in-out" onerror="this.src='https://placehold.co/400x300/1a1a1a/red?text=Imagem+Indispon%C3%ADvel'">
+                        <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-in-out" onerror="this.src='https://placehold.co/400x300/1a1a1a/red?text=Indispon%C3%ADvel'">
                         <div class="absolute top-3 right-3 z-20 flex flex-col items-end gap-1">
                             <div class="bg-white/80 dark:bg-black/60 backdrop-blur-md px-2 py-1 rounded-lg flex items-center gap-1 border border-black/5 dark:border-white/10 shadow-sm">
                                 <i data-lucide="star" class="w-3 h-3 text-yellow-500 fill-yellow-500"></i>
@@ -1057,7 +1083,7 @@
             container.innerHTML = `
                 <div class="lg:col-span-7 relative group lg:sticky lg:top-24">
                     <div class="relative rounded-[3rem] overflow-hidden aspect-[4/3] border border-black/10 dark:border-white/10 shadow-2xl bg-white dark:bg-[#0f0f0f]">
-                        <img src="${product.image}" class="w-full h-full object-cover scale-105 group-hover:scale-100 transition-transform duration-700" onerror="this.src='https://placehold.co/600x400/1a1a1a/red?text=Imagem+Indispon%C3%ADvel'">
+                        <img src="${product.image}" class="w-full h-full object-cover scale-105 group-hover:scale-100 transition-transform duration-700" onerror="this.src='https://placehold.co/600x400/1a1a1a/red?text=Indispon%C3%ADvel'">
                     </div>
                 </div>
                 <div class="lg:col-span-5 flex flex-col">
@@ -1116,18 +1142,61 @@
             const price = getCustomizedPrice(product, options);
             const displayOptions = activeOptionKeys.map(key => product.options.find(o => o.id === key)).filter(Boolean);
 
-            const existing = state.cart.find(item => item.uniqueId === uniqueId);
-            if (existing) existing.quantity += 1;
-            else state.cart.push({ ...product, uniqueId, quantity: 1, price, selectedOptions: displayOptions });
+            const itemToAdd = { ...product, uniqueId, quantity: 1, price, selectedOptions: displayOptions };
 
-            saveData(); // Save to localStorage
-            renderCart();
+            // Upsell Logic: Se for sanduíche, oferece batata
+            if (product.category === 'Sanduíches') {
+                state.pendingUpsellItem = itemToAdd;
+                document.getElementById('upsell-modal').classList.remove('hidden');
+            } else {
+                confirmAddToCart(itemToAdd);
+                toggleCart();
+            }
+        }
+
+        function acceptUpsell() {
+            // Adiciona o item principal
+            confirmAddToCart(state.pendingUpsellItem);
+            
+            // Adiciona a batata promocional
+            const promoFries = {
+                id: 9999, // ID único para promo
+                name: "Batata Frita Crocante (Promo)",
+                price: 5.00,
+                image: "https://images.unsplash.com/photo-1630384060421-a4323ceca041?auto=format&fit=crop&q=80&w=400",
+                quantity: 1,
+                uniqueId: `promo-fries-${Date.now()}`,
+                selectedOptions: []
+            };
+            confirmAddToCart(promoFries);
+
+            document.getElementById('upsell-modal').classList.add('hidden');
+            state.pendingUpsellItem = null;
             toggleCart();
+        }
+
+        function declineUpsell() {
+            // Adiciona apenas o item principal
+            confirmAddToCart(state.pendingUpsellItem);
+            document.getElementById('upsell-modal').classList.add('hidden');
+            state.pendingUpsellItem = null;
+            toggleCart();
+        }
+
+        function confirmAddToCart(item) {
+            const existing = state.cart.find(i => i.uniqueId === item.uniqueId);
+            if (existing) {
+                existing.quantity += 1;
+            } else {
+                state.cart.push(item);
+            }
+            saveData();
+            renderCart();
         }
 
         function removeFromCart(uniqueId) {
             state.cart = state.cart.filter(item => item.uniqueId !== uniqueId);
-            saveData(); // Save to localStorage
+            saveData();
             renderCart();
         }
 
@@ -1139,7 +1208,7 @@
                 }
                 return item;
             });
-            saveData(); // Save to localStorage
+            saveData();
             renderCart();
         }
 
@@ -1195,13 +1264,12 @@
             
             // Solicitar dados do cliente
             const clientName = prompt("Por favor, digite seu nome:");
-            if (!clientName) return; // Cancela se não digitar nome
+            if (!clientName) return; 
 
             let address = "";
-            // Se não for pedido de mesa, pede endereço
             if (!state.currentTable) {
                 address = prompt("Por favor, digite seu endereço completo:");
-                if (!address) return; // Cancela se não digitar endereço (opcional: pode deixar passar sem)
+                if (!address) return; 
             }
 
             // Cria o pedido para o Admin
@@ -1210,19 +1278,16 @@
                 date: new Date().toISOString(),
                 total: total,
                 status: 'Pendente',
-                items: JSON.parse(JSON.stringify(state.cart)), // Copia profunda
-                table: state.currentTable, // Adiciona info da mesa
+                items: JSON.parse(JSON.stringify(state.cart)), 
+                table: state.currentTable, 
                 clientName: clientName,
                 address: address
             };
 
-            // Adiciona ao início da lista
             state.orders.unshift(newOrder);
 
             // Monta msg WhatsApp
             let message = "";
-            
-            // Cabeçalho
             if(state.currentTable) {
                 message += `📍 *PEDIDO MESA ${state.currentTable}*\n`;
             } else {
@@ -1243,10 +1308,8 @@
             
             message += `\n💰 *Total: R$ ${total.toFixed(2)}*`;
             
-            // Abre WhatsApp
             window.open(`https://wa.me/5584999780963?text=${encodeURIComponent(message)}`, '_blank');
             
-            // Limpa carrinho
             state.cart = [];
             saveData();
             renderCart();
@@ -1285,7 +1348,7 @@
             if (state.isAdminLoggedIn) {
                 if (dashboard.classList.contains('hidden')) {
                     dashboard.classList.remove('hidden');
-                    switchAdminView('products'); // Default view
+                    switchAdminView('products'); 
                 } else {
                     dashboard.classList.add('hidden');
                     state.isAdminLoggedIn = false;
@@ -1305,18 +1368,18 @@
             const viewOrders = document.getElementById('admin-view-orders');
             const viewQR = document.getElementById('admin-view-qr');
 
-            // Reset all tabs
+            // Reset tabs
             [tabProducts, tabOrders, tabQR].forEach(tab => {
                 tab.classList.remove('border-red-600', 'text-red-600', 'dark:text-white');
                 tab.classList.add('border-transparent', 'text-neutral-500');
             });
             
-            // Hide all views
+            // Hide views
             viewProducts.classList.add('hidden');
             viewOrders.classList.add('hidden');
             viewQR.classList.add('hidden');
 
-            // Activate selected
+            // Activate
             if (view === 'products') {
                 tabProducts.classList.add('border-red-600', 'text-red-600', 'dark:text-white');
                 tabProducts.classList.remove('border-transparent', 'text-neutral-500');
@@ -1334,15 +1397,14 @@
             }
         }
 
-        // --- QR Code Generator Logic ---
+        // --- QR Code Logic ---
         function generateQRCode() {
             const num = document.getElementById('qr-table-num').value;
             if(!num) return alert("Digite o número da mesa!");
 
             const container = document.getElementById('qrcode-container');
-            container.innerHTML = ""; // Clear previous
+            container.innerHTML = ""; 
 
-            // URL Base (Na vida real, seria seu domínio. Aqui usamos o local)
             const baseUrl = window.location.href.split('?')[0]; 
             const finalUrl = `${baseUrl}?mesa=${num}`;
 
@@ -1374,7 +1436,7 @@
             printWindow.print();
         }
 
-        // --- Admin: Gestão de Pedidos & Dashboard ---
+        // --- Admin: Gestão de Pedidos (Fixed Columns) ---
 
         function renderAdminOrders() {
             const list = document.getElementById('admin-orders-list');
@@ -1383,14 +1445,9 @@
             const filterEnd = document.getElementById('order-filter-end').value;
             const noOrders = document.getElementById('no-orders-msg');
 
-            // --- FILTERING LOGIC ---
             let filteredOrders = state.orders.filter(o => {
                 const oDate = new Date(o.date);
-                
-                // Status Filter
                 const matchStatus = filterStatus === 'all' || o.status === filterStatus;
-                
-                // Date Filter
                 let matchDate = true;
                 
                 if (filterStart) {
@@ -1398,32 +1455,27 @@
                     const start = new Date(parts[0], parts[1] - 1, parts[2]); 
                     matchDate = matchDate && oDate >= start;
                 }
-                
                 if (filterEnd) {
                     const parts = filterEnd.split('-');
                     const end = new Date(parts[0], parts[1] - 1, parts[2]);
                     end.setHours(23, 59, 59, 999);
                     matchDate = matchDate && oDate <= end;
                 }
-
                 return matchStatus && matchDate;
             });
 
-            // --- DASHBOARD CALCULATION ---
+            // Dashboard Stats
             const totalRevenue = filteredOrders.reduce((sum, o) => sum + o.total, 0);
             const totalCount = filteredOrders.length;
             const avgTicket = totalCount > 0 ? totalRevenue / totalCount : 0;
             const deliveredCount = filteredOrders.filter(o => o.status === 'Entregue').length;
             const conversionRate = totalCount > 0 ? (deliveredCount / totalCount) * 100 : 0;
 
-            // Update DOM
             document.getElementById('dash-total-revenue').innerText = `R$ ${totalRevenue.toFixed(2)}`;
             document.getElementById('dash-total-count').innerText = totalCount;
             document.getElementById('dash-avg-ticket').innerText = `R$ ${avgTicket.toFixed(2)}`;
             document.getElementById('dash-conversion').innerText = `${conversionRate.toFixed(0)}%`;
 
-
-            // --- LIST RENDERING ---
             if (filteredOrders.length === 0) {
                 list.innerHTML = '';
                 noOrders.classList.remove('hidden');
@@ -1439,9 +1491,8 @@
             };
 
             list.innerHTML = filteredOrders.map(order => {
-                // Short summary of items
-                const summary = order.items.map(i => `${i.quantity}x ${i.name}`).join(', ');
-                const displaySummary = summary.length > 40 ? summary.substring(0, 40) + '...' : summary;
+                const itemsSummary = order.items.map(i => `${i.quantity}x ${i.name}`).join(', ');
+                const itemsTruncated = itemsSummary.length > 40 ? itemsSummary.substring(0, 40) + '...' : itemsSummary;
 
                 return `
                 <tr class="hover:bg-blue-50/50 dark:hover:bg-white/5 transition-colors border-b border-black/5 dark:border-white/5 last:border-0 group cursor-pointer" onclick="viewOrderDetails(${order.id})">
@@ -1454,7 +1505,7 @@
                         <div class="text-xs text-neutral-400">${new Date(order.date).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'})}</div>
                     </td>
                     <td class="p-5">
-                        <div class="text-sm font-medium text-neutral-700 dark:text-neutral-300">${displaySummary}</div>
+                        <div class="text-sm font-medium text-neutral-700 dark:text-neutral-300">${itemsTruncated}</div>
                         <div class="text-xs text-neutral-400 mt-0.5">${order.items.length} itens</div>
                     </td>
                     <td class="p-5">
@@ -1477,70 +1528,49 @@
             lucide.createIcons();
         }
 
-        function handleOrderFilter() {
-            renderAdminOrders();
-        }
-
+        // ... (Restante das funções permanece igual)
+        function handleOrderFilter() { renderAdminOrders(); }
         function viewOrderDetails(orderId) {
             const order = state.orders.find(o => o.id === orderId);
             if (!order) return;
             state.selectedOrder = order;
-
-            // Se tiver mesa, mostra no título do modal
             const tableText = order.table ? ` (Mesa ${order.table})` : '';
             document.getElementById('modal-order-id').innerText = `Pedido #${order.id}${tableText}`;
-            
             document.getElementById('modal-order-date').innerText = new Date(order.date).toLocaleString('pt-BR');
             document.getElementById('modal-order-total').innerText = `R$ ${order.total.toFixed(2)}`;
-
             const itemsContainer = document.getElementById('modal-order-items');
             itemsContainer.innerHTML = order.items.map(item => `
                 <div class="flex justify-between items-start border-b border-black/5 dark:border-white/5 pb-2 last:border-0">
                     <div>
                         <span class="font-bold text-neutral-900 dark:text-white text-sm">${item.quantity}x ${item.name}</span>
-                        ${item.selectedOptions && item.selectedOptions.length > 0 
-                            ? `<div class="text-xs text-neutral-500 mt-1">${item.selectedOptions.map(o => o.name).join(', ')}</div>` 
-                            : ''}
+                        ${item.selectedOptions && item.selectedOptions.length > 0 ? `<div class="text-xs text-neutral-500 mt-1">${item.selectedOptions.map(o => o.name).join(', ')}</div>` : ''}
                     </div>
                     <span class="text-sm font-bold text-neutral-700 dark:text-neutral-300">R$ ${(item.price * item.quantity).toFixed(2)}</span>
                 </div>
             `).join('');
-
             document.getElementById('order-details-modal').classList.remove('hidden');
         }
-
         function toggleOrderDetails() {
             document.getElementById('order-details-modal').classList.add('hidden');
             state.selectedOrder = null;
         }
-
         function updateOrderStatusFromModal(newStatus) {
             if (!state.selectedOrder) return;
             state.selectedOrder.status = newStatus;
-            
-            // Re-render
-            viewOrderDetails(state.selectedOrder.id); // Update modal UI if needed (though buttons stay same)
-            renderAdminOrders(); // Update list
-            toggleOrderDetails(); // Close modal
+            viewOrderDetails(state.selectedOrder.id); 
+            renderAdminOrders(); 
+            toggleOrderDetails(); 
             saveData();
         }
-
-
-        // --- Admin: Gestão de Produtos ---
-
         function renderAdminList() {
             const tbody = document.getElementById('admin-products-list');
             const badge = document.getElementById('total-items-badge');
-            
             badge.innerText = `${state.menu.length} itens`;
-            
             tbody.innerHTML = state.menu.map(item => `
                 <tr class="hover:bg-black/5 dark:hover:bg-white/5 transition-colors group ${item.active === false ? 'opacity-50' : ''}">
                     <td class="p-4 pl-6">
                         <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-lg overflow-hidden border border-black/10 dark:border-white/10">
-                                <img src="${item.image}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/100x100/1a1a1a/red?text=Erro'">
-                            </div>
+                            <div class="w-10 h-10 rounded-lg overflow-hidden border border-black/10 dark:border-white/10"><img src="${item.image}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/100x100/1a1a1a/red?text=Erro'"></div>
                             <span class="font-bold text-neutral-900 dark:text-white">${item.name}</span>
                         </div>
                     </td>
@@ -1548,107 +1578,55 @@
                     <td class="p-4 font-bold text-neutral-900 dark:text-white">R$ ${item.price.toFixed(2)}</td>
                     <td class="p-4 pr-6 text-right">
                         <div class="flex justify-end gap-2">
-                            <button onclick="toggleProductActive(${item.id})" class="p-2 ${item.active !== false ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' : 'bg-gray-200 dark:bg-white/10 text-neutral-400'} rounded-lg hover:opacity-80 transition-colors" title="${item.active !== false ? 'Desativar' : 'Ativar'}">
-                                <i data-lucide="${item.active !== false ? 'eye' : 'eye-off'}" class="w-4 h-4"></i>
-                            </button>
-                            <button onclick="editProduct(${item.id})" class="p-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors" title="Editar">
-                                <i data-lucide="pencil" class="w-4 h-4"></i>
-                            </button>
-                            <button onclick="openDeleteModal(${item.id})" class="p-2 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors" title="Excluir">
-                                <i data-lucide="trash-2" class="w-4 h-4"></i>
-                            </button>
+                            <button onclick="toggleProductActive(${item.id})" class="p-2 ${item.active !== false ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' : 'bg-gray-200 dark:bg-white/10 text-neutral-400'} rounded-lg hover:opacity-80 transition-colors"><i data-lucide="${item.active !== false ? 'eye' : 'eye-off'}" class="w-4 h-4"></i></button>
+                            <button onclick="editProduct(${item.id})" class="p-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors"><i data-lucide="pencil" class="w-4 h-4"></i></button>
+                            <button onclick="openDeleteModal(${item.id})" class="p-2 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                         </div>
                     </td>
                 </tr>
             `).join('');
             lucide.createIcons();
         }
-
-        // Toggle Active Status
         function toggleProductActive(id) {
             const product = state.menu.find(p => p.id === id);
-            if (product) {
-                // Toggle active state (undefined or true -> false, false -> true)
-                product.active = product.active === false; 
-                renderAdminList();
-                renderMenu();
-                renderBestSellers();
-            }
+            if (product) { product.active = product.active === false; renderAdminList(); renderMenu(); renderBestSellers(); }
         }
-
-        // --- Lógica do Modal de Exclusão ---
-
-        function openDeleteModal(id) {
-            state.productToDeleteId = id;
-            document.getElementById('delete-confirmation-modal').classList.remove('hidden');
-        }
-
-        function closeDeleteModal() {
-            state.productToDeleteId = null;
-            document.getElementById('delete-confirmation-modal').classList.add('hidden');
-        }
-
-        function confirmDeleteProduct() {
-            if (state.productToDeleteId) {
-                state.menu = state.menu.filter(p => p.id !== state.productToDeleteId);
-                
-                // Atualiza todas as views
-                renderAdminList();
-                renderMenu(); 
-                renderBestSellers();
-            }
-            closeDeleteModal();
-        }
-
-        // Editar Produto (Preenche o formulário)
+        function openDeleteModal(id) { state.productToDeleteId = id; document.getElementById('delete-confirmation-modal').classList.remove('hidden'); }
+        function closeDeleteModal() { state.productToDeleteId = null; document.getElementById('delete-confirmation-modal').classList.add('hidden'); }
+        function confirmDeleteProduct() { if (state.productToDeleteId) { state.menu = state.menu.filter(p => p.id !== state.productToDeleteId); renderAdminList(); renderMenu(); renderBestSellers(); } closeDeleteModal(); }
         function editProduct(id) {
             const item = state.menu.find(p => p.id === id);
             if (!item) return;
-
             document.getElementById('edit-id').value = item.id;
             document.getElementById('admin-name').value = item.name;
             document.getElementById('admin-price').value = item.price;
             document.getElementById('admin-image').value = item.image;
             document.getElementById('admin-desc').value = item.description;
             document.getElementById('admin-cat').value = item.category;
-
-            // Reset Tags Checkboxes
             document.getElementById('admin-tag-spicy').checked = false;
             document.getElementById('admin-tag-vegan').checked = false;
             document.getElementById('admin-tag-gluten_free').checked = false;
-
-            // Check Tags based on item data
             if (item.tags) {
                 if (item.tags.includes('spicy')) document.getElementById('admin-tag-spicy').checked = true;
                 if (item.tags.includes('vegan')) document.getElementById('admin-tag-vegan').checked = true;
                 if (item.tags.includes('gluten_free')) document.getElementById('admin-tag-gluten_free').checked = true;
             }
-
-            // Altera UI para modo edição
             document.getElementById('form-title').innerText = "Editar Item";
             document.getElementById('save-btn').innerHTML = `<i data-lucide="refresh-cw" class="w-4 h-4"></i> ATUALIZAR`;
-            
-            // Scroll para o topo do form
             const dashboard = document.getElementById('admin-dashboard');
             dashboard.scrollTo({ top: 0, behavior: 'smooth' });
             lucide.createIcons();
         }
-
         function resetForm() {
             document.querySelector('form').reset();
             document.getElementById('edit-id').value = '';
             document.getElementById('form-title').innerText = "Adicionar Novo Item";
             document.getElementById('save-btn').innerHTML = `<i data-lucide="save" class="w-4 h-4"></i> SALVAR PRODUTO`;
-            
-            // Reset Tags Manually
             document.getElementById('admin-tag-spicy').checked = false;
             document.getElementById('admin-tag-vegan').checked = false;
             document.getElementById('admin-tag-gluten_free').checked = false;
-            
             lucide.createIcons();
         }
-
-        // Salvar (Criar ou Atualizar)
         function handleSaveProduct(e) {
             e.preventDefault();
             const id = document.getElementById('edit-id').value;
@@ -1657,82 +1635,35 @@
             let image = document.getElementById('admin-image').value;
             const desc = document.getElementById('admin-desc').value;
             const cat = document.getElementById('admin-cat').value;
-
-            // CORREÇÃO IMGUR: Auto-converter links de post para links diretos de imagem
-            // Ex: https://imgur.com/codigo -> https://i.imgur.com/codigo.jpg
             if (image && image.includes('imgur.com') && !image.includes('i.imgur.com')) {
                  const match = image.match(/imgur\.com\/([a-zA-Z0-9]{5,})/);
-                 if (match && match[1] && !image.includes('/a/') && !image.includes('/gallery/')) {
-                     image = `https://i.imgur.com/${match[1]}.jpg`;
-                 }
+                 if (match && match[1] && !image.includes('/a/') && !image.includes('/gallery/')) { image = `https://i.imgur.com/${match[1]}.jpg`; }
             }
-
-            // Capture Tags
             const tags = [];
             if (document.getElementById('admin-tag-spicy').checked) tags.push('spicy');
             if (document.getElementById('admin-tag-vegan').checked) tags.push('vegan');
             if (document.getElementById('admin-tag-gluten_free').checked) tags.push('gluten_free');
-
             if (id) {
-                // Atualizar Existente
                 const index = state.menu.findIndex(p => p.id == id);
-                if (index !== -1) {
-                    state.menu[index] = {
-                        ...state.menu[index],
-                        name, price, image, description: desc, category: cat, tags: tags
-                    };
-                }
+                if (index !== -1) { state.menu[index] = { ...state.menu[index], name, price, image, description: desc, category: cat, tags: tags }; }
             } else {
-                // Criar Novo
-                const newProduct = {
-                    id: Date.now(),
-                    name, 
-                    description: desc,
-                    price,
-                    category: cat,
-                    image: image || "https://placehold.co/400x300/1a1a1a/red?text=Sem+Imagem",
-                    rating: 5.0, time: "N/A", calories: "N/A", sales: 0, 
-                    tags: tags, 
-                    options: [],
-                    active: true // Default to active
-                };
+                const newProduct = { id: Date.now(), name, description: desc, price, category: cat, image: image || "https://placehold.co/400x300/1a1a1a/red?text=Sem+Imagem", rating: 5.0, time: "N/A", calories: "N/A", sales: 0, tags: tags, options: [], active: true };
                 state.menu.push(newProduct);
             }
-
-            saveData(); // Save changes
+            saveData();
             resetForm();
             renderAdminList();
             renderMenu();
             renderBestSellers();
             alert("Cardápio atualizado com sucesso!");
         }
-
-        // --- Tema ---
         function initTheme() {
-            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                document.documentElement.classList.add('dark');
-                updateThemeIcon(true);
-            } else {
-                document.documentElement.classList.remove('dark');
-                updateThemeIcon(false);
-            }
+            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) { document.documentElement.classList.add('dark'); updateThemeIcon(true); } else { document.documentElement.classList.remove('dark'); updateThemeIcon(false); }
         }
         function toggleTheme() {
-            if (document.documentElement.classList.contains('dark')) {
-                document.documentElement.classList.remove('dark');
-                localStorage.theme = 'light';
-                updateThemeIcon(false);
-            } else {
-                document.documentElement.classList.add('dark');
-                localStorage.theme = 'dark';
-                updateThemeIcon(true);
-            }
+            if (document.documentElement.classList.contains('dark')) { document.documentElement.classList.remove('dark'); localStorage.theme = 'light'; updateThemeIcon(false); } else { document.documentElement.classList.add('dark'); localStorage.theme = 'dark'; updateThemeIcon(true); }
         }
-        function updateThemeIcon(isDark) {
-            const icon = document.getElementById('theme-icon');
-            icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
-            lucide.createIcons();
-        }
+        function updateThemeIcon(isDark) { const icon = document.getElementById('theme-icon'); icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon'); lucide.createIcons(); }
     </script>
 </body>
 </html>
