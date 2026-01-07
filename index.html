@@ -835,8 +835,10 @@
                 const matchesTag = state.activeTag === null || (item.tags && item.tags.includes(state.activeTag));
                 const term = state.searchTerm.toLowerCase();
                 const matchesSearch = term === "" || item.name.toLowerCase().includes(term) || item.description.toLowerCase().includes(term);
-                const isActive = item.active !== false; 
-                return matchesCategory && matchesTag && matchesSearch && isActive;
+                const isActive = item.active !== false;
+                // EXCLUSÃO DE PRODUTOS EM PROMOÇÃO DA LISTA PRINCIPAL
+                const isNotPromo = item.promo !== true; 
+                return matchesCategory && matchesTag && matchesSearch && isActive && isNotPromo;
             });
             if (state.searchTerm) title.innerText = `RESULTADOS PARA: "${state.searchTerm}"`;
             else if (state.filter !== "Todos") title.innerText = `CATEGORIA: ${state.filter}`;
@@ -1164,7 +1166,7 @@
         function renderPromoSection() {
             const container = document.getElementById('special-promos-grid');
             const section = document.getElementById('special-promos-section');
-            const promos = state.menu.filter(p => p.promo === true && p.active !== false);
+            const promos = state.menu.filter(p => p.promo === true && p.active !== false).slice(0, 3);
 
             if (promos.length === 0) {
                 section.classList.add('hidden');
