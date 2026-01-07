@@ -410,6 +410,60 @@
             </div>
         </div>
 
+        <!-- Order Details Modal (Missing in previous version, now restored) -->
+        <div id="order-details-modal" class="fixed inset-0 z-[70] flex items-center justify-center bg-background/80 backdrop-blur-sm hidden animate-fade-in p-4">
+            <div class="bg-card w-full max-w-lg rounded-3xl shadow-2xl border border-border flex flex-col max-h-[90vh]">
+                <div class="p-6 border-b border-border flex justify-between items-center bg-muted/30">
+                    <div>
+                        <span class="text-xs font-bold text-muted-foreground uppercase tracking-wider">Detalhes</span>
+                        <h3 class="text-xl font-black text-foreground mt-0.5" id="modal-order-id">Pedido #0000</h3>
+                        <p class="text-sm text-muted-foreground mt-1" id="modal-order-date">Data</p>
+                    </div>
+                    <button onclick="toggleOrderDetails()" class="w-10 h-10 rounded-full bg-background hover:bg-accent flex items-center justify-center transition-colors shadow-sm border border-border">
+                        <i data-lucide="x" class="w-5 h-5 text-muted-foreground"></i>
+                    </button>
+                </div>
+                
+                <div class="p-6 overflow-y-auto flex-1">
+                    <h4 class="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4">Itens do Pedido</h4>
+                    <div id="modal-order-items" class="space-y-3">
+                        <!-- JS Injected -->
+                    </div>
+                    
+                    <div class="mt-8 pt-6 border-t border-border flex justify-between items-end">
+                        <span class="text-sm font-medium text-muted-foreground">Valor Total</span>
+                        <span class="text-3xl font-black text-foreground" id="modal-order-total">R$ 0,00</span>
+                    </div>
+                </div>
+                
+                <div class="p-6 bg-muted/30 border-t border-border rounded-b-3xl">
+                    <p class="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3 text-center">Atualizar Status</p>
+                    <div class="grid grid-cols-3 gap-3">
+                        <button onclick="updateOrderStatusFromModal('Em Preparo')" class="flex flex-col items-center justify-center gap-2 bg-card hover:bg-blue-500/10 border border-border hover:border-blue-500/30 p-3 rounded-xl transition-all group">
+                            <div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <i data-lucide="chef-hat" class="w-4 h-4"></i>
+                            </div>
+                            <span class="text-xs font-bold text-blue-700 dark:text-blue-300">Preparar</span>
+                        </button>
+                        
+                        <button onclick="updateOrderStatusFromModal('Entregue')" class="flex flex-col items-center justify-center gap-2 bg-card hover:bg-green-500/10 border border-border hover:border-green-500/30 p-3 rounded-xl transition-all group">
+                            <div class="w-8 h-8 rounded-full bg-green-100 dark:bg-green-500/20 text-green-600 dark:text-green-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <i data-lucide="check" class="w-4 h-4"></i>
+                            </div>
+                            <span class="text-xs font-bold text-green-700 dark:text-green-300">Entregar</span>
+                        </button>
+                        
+                        <button onclick="updateOrderStatusFromModal('Cancelado')" class="flex flex-col items-center justify-center gap-2 bg-card hover:bg-destructive/10 border border-border hover:border-destructive/30 p-3 rounded-xl transition-all group">
+                            <div class="w-8 h-8 rounded-full bg-red-100 dark:bg-red-500/20 text-destructive flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <i data-lucide="x" class="w-4 h-4"></i>
+                            </div>
+                            <span class="text-xs font-bold text-destructive">Cancelar</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Upsell Modal -->
         <div id="upsell-modal" class="fixed inset-0 z-[70] flex items-center justify-center bg-background/80 backdrop-blur-sm hidden animate-fade-in p-4">
              <div class="bg-card border border-border w-full max-w-sm rounded-3xl shadow-2xl relative overflow-hidden transform scale-95 opacity-0 transition-all duration-300" id="upsell-modal-content">
@@ -723,8 +777,9 @@
             renderCart();
             renderCategoryOptions(); 
             renderPromotions(); 
-            renderOpeningHoursTag(); 
+            renderOpeningHoursTag(); // Render hours tag
             
+            // Mock Orders
             if (state.orders.length === 0) {
                  const today = new Date();
                  const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
@@ -1130,53 +1185,110 @@
             const order = state.orders.find(o => o.id === orderId);
             if (!order) return;
             state.selectedOrder = order;
-            const tableText = order.table ? ` (Mesa ${order.table})` : '';
-            document.getElementById('modal-order-id').innerText = `Pedido #${order.id}${tableText}`;
-            document.getElementById('modal-order-date').innerText = new Date(order.date).toLocaleString('pt-BR');
-            document.getElementById('modal-order-total').innerText = `R$ ${order.total.toFixed(2)}`;
-            const itemsContainer = document.getElementById('modal-order-items');
-            itemsContainer.innerHTML = order.items.map(item => `<div class="flex justify-between items-start border-b border-border pb-2 last:border-0"><div><span class="font-bold text-foreground text-sm">${item.quantity}x ${item.name}</span>${item.selectedOptions && item.selectedOptions.length > 0 ? `<div class="text-xs text-muted-foreground mt-1">${item.selectedOptions.map(o => o.name).join(', ')}</div>` : ''}</div><span class="text-sm font-bold text-muted-foreground">R$ ${(item.price * item.quantity).toFixed(2)}</span></div>`).join('');
-            document.getElementById('order-details-modal').classList.remove('hidden');
+            
+            const modalOrderId = document.getElementById('modal-order-id');
+            const modalOrderDate = document.getElementById('modal-order-date');
+            const modalOrderTotal = document.getElementById('modal-order-total');
+            const modalOrderItems = document.getElementById('modal-order-items');
+            const orderDetailsModal = document.getElementById('order-details-modal');
+
+            if (modalOrderId) {
+                const tableText = order.table ? ` (Mesa ${order.table})` : '';
+                modalOrderId.innerText = `Pedido #${order.id}${tableText}`;
+            }
+            if (modalOrderDate) modalOrderDate.innerText = new Date(order.date).toLocaleString('pt-BR');
+            if (modalOrderTotal) modalOrderTotal.innerText = `R$ ${order.total.toFixed(2)}`;
+            
+            if (modalOrderItems) {
+                modalOrderItems.innerHTML = order.items.map(item => `
+                    <div class="flex justify-between items-start border-b border-border pb-2 last:border-0">
+                        <div>
+                            <span class="font-bold text-foreground text-sm">${item.quantity}x ${item.name}</span>
+                            ${item.selectedOptions && item.selectedOptions.length > 0 ? `<div class="text-xs text-muted-foreground mt-1">${item.selectedOptions.map(o => o.name).join(', ')}</div>` : ''}
+                        </div>
+                        <span class="text-sm font-bold text-muted-foreground">R$ ${(item.price * item.quantity).toFixed(2)}</span>
+                    </div>
+                `).join('');
+            }
+            
+            if (orderDetailsModal) orderDetailsModal.classList.remove('hidden');
         }
         function toggleOrderDetails() { document.getElementById('order-details-modal').classList.add('hidden'); state.selectedOrder = null; }
         function updateOrderStatusFromModal(newStatus) { if (!state.selectedOrder) return; state.selectedOrder.status = newStatus; viewOrderDetails(state.selectedOrder.id); renderAdminOrders(); toggleOrderDetails(); saveData(); }
 
-        // --- NEW: Render Admin Promos Table ---
-        function renderAdminPromos() {
-            const tbody = document.getElementById('admin-promos-list');
-            tbody.innerHTML = state.menu.map(item => `
-                <tr class="hover:bg-accent/50 transition-colors border-b border-border last:border-0">
-                    <td class="p-5 pl-6">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-lg overflow-hidden border border-border"><img src="${item.image}" class="w-full h-full object-cover"></div>
-                            <span class="font-bold text-foreground">${item.name}</span>
-                        </div>
-                    </td>
-                    <td class="p-5 text-muted-foreground">R$ ${item.price.toFixed(2)}</td>
-                    <td class="p-5">
-                        <input type="number" step="0.10" value="${item.promoPrice || 0}" 
-                            class="w-24 bg-input border border-border rounded-lg px-2 py-1 text-sm text-foreground focus:border-primary outline-none"
-                            onchange="updatePromoPrice(${item.id}, this.value)"
-                        >
-                    </td>
-                    <td class="p-5">
-                        <label class="inline-flex items-center cursor-pointer">
-                            <input type="checkbox" class="sr-only peer" ${item.promo ? 'checked' : ''} onchange="togglePromoStatus(${item.id})">
-                            <div class="relative w-11 h-6 bg-input border-border peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                            <span class="ms-3 text-sm font-medium text-foreground">${item.promo ? 'Ativo' : 'Inativo'}</span>
-                        </label>
-                    </td>
-                    <td class="p-5 pr-6 text-right text-xs text-muted-foreground">
-                        ${item.promo ? 'Exibindo na Loja' : '-'}
-                    </td>
-                </tr>
-            `).join('');
+        // --- NEW: Helper Function for Price ---
+        function getCustomizedPrice(product, options) {
+            let total = product.promo && product.promoPrice > 0 ? product.promoPrice : product.price;
+            if (product.options) product.options.forEach(opt => { if (options[opt.id]) total += opt.price; });
+            return total;
         }
-        // --- NEW: Render Promo Section ---
+
+        // --- NEW: Render Details Content ---
+        function renderDetailsContent() {
+            const product = state.selectedProduct;
+            const container = document.getElementById('details-content');
+            const currentPrice = getCustomizedPrice(product, state.selectedOptions);
+            
+            let optionsHtml = '';
+            if (product.options && product.options.length > 0) {
+                optionsHtml = `<div class="mb-8"><h3 class="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-4 flex items-center gap-2"><i data-lucide="edit-3" class="w-3.5 h-3.5"></i> Personalize seu pedido</h3><div class="space-y-3">` +
+                product.options.map(opt => {
+                    const isSelected = !!state.selectedOptions[opt.id];
+                    return `
+                    <div onclick="toggleOption('${opt.id}')" class="flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all duration-200 group ${isSelected ? 'border-primary bg-primary/10 shadow-md' : 'border-border bg-card hover:border-primary/50'}">
+                        <div class="flex items-center gap-4">
+                            <div class="w-6 h-6 rounded-lg border flex items-center justify-center transition-colors ${isSelected ? 'bg-primary border-primary' : 'border-input group-hover:border-muted-foreground'}">
+                                ${isSelected ? '<i data-lucide="check" class="w-3.5 h-3.5 text-primary-foreground"></i>' : ''}
+                            </div>
+                            <span class="font-medium transition-colors ${isSelected ? 'text-primary' : 'text-foreground'}">${opt.name}</span>
+                        </div>
+                        <span class="text-sm font-bold ${opt.price > 0 ? 'text-primary' : 'text-green-600'}">${opt.price > 0 ? '+ R$ ' + opt.price.toFixed(2) : 'Grátis'}</span>
+                    </div>`;
+                }).join('') + `</div></div>`;
+            }
+
+            container.innerHTML = `
+                <div class="lg:col-span-7 relative group lg:sticky lg:top-24 animate-fade-in">
+                    <div class="relative rounded-[3rem] overflow-hidden aspect-[4/3] border border-border shadow-2xl bg-card">
+                        <img src="${product.image}" class="w-full h-full object-cover scale-105 group-hover:scale-100 transition-transform duration-700" onerror="this.src='https://placehold.co/600x400/1a1a1a/red?text=Imagem+Indispon%C3%ADvel'">
+                    </div>
+                </div>
+                <div class="lg:col-span-5 flex flex-col animate-slide-up">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="px-3 py-1 rounded-full border border-primary/30 bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider backdrop-blur-md">${product.category}</span>
+                        <div class="flex items-center gap-1 text-yellow-500 ml-auto lg:ml-0 drop-shadow-sm">
+                            <i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i>
+                            <span class="text-sm font-bold text-foreground">${product.rating}</span>
+                        </div>
+                    </div>
+                    <h2 class="text-4xl md:text-6xl font-black mb-6 leading-[0.9] tracking-tighter text-foreground drop-shadow-md">${product.name}</h2>
+                    <p class="text-muted-foreground text-lg leading-relaxed mb-6 font-medium">${product.description}</p>
+                    ${optionsHtml}
+                    <div class="sticky bottom-4 z-20 mt-auto">
+                        <div class="bg-background/90 backdrop-blur-xl p-4 rounded-3xl border border-border shadow-2xl">
+                            <div class="flex items-center gap-6">
+                                <div>
+                                    <span class="block text-sm text-muted-foreground mb-1">Total do Item</span>
+                                    <span class="text-3xl font-black text-foreground tracking-tight">
+                                        <span class="text-base align-top text-primary font-bold mr-1">R$</span>${currentPrice.toFixed(2)}
+                                    </span>
+                                </div>
+                                <button onclick="addToCart()" class="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 h-16 rounded-2xl font-black text-lg flex items-center justify-center gap-2 transition-all duration-300 shadow-xl hover:shadow-primary/40 hover:-translate-y-1 active:scale-95">
+                                    ADICIONAR <i data-lucide="plus" class="w-6 h-6"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        // --- NEW: Promo Section Logic ---
         function renderPromoSection() {
             const container = document.getElementById('special-promos-grid');
             const section = document.getElementById('special-promos-section');
-            const promos = state.menu.filter(p => p.promo === true && p.active !== false).slice(0, 3);
+            const promos = state.menu.filter(p => p.promo === true && p.active !== false);
 
             if (promos.length === 0) {
                 section.classList.add('hidden');
@@ -1208,6 +1320,38 @@
                 </div>
             `).join('');
             lucide.createIcons();
+        }
+
+        // --- NEW: Render Admin Promos Table ---
+        function renderAdminPromos() {
+            const tbody = document.getElementById('admin-promos-list');
+            tbody.innerHTML = state.menu.map(item => `
+                <tr class="hover:bg-accent/50 transition-colors border-b border-border last:border-0">
+                    <td class="p-5 pl-6">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg overflow-hidden border border-border"><img src="${item.image}" class="w-full h-full object-cover"></div>
+                            <span class="font-bold text-foreground">${item.name}</span>
+                        </div>
+                    </td>
+                    <td class="p-5 text-muted-foreground">R$ ${item.price.toFixed(2)}</td>
+                    <td class="p-5">
+                        <input type="number" step="0.10" value="${item.promoPrice || 0}" 
+                            class="w-24 bg-input border border-border rounded-lg px-2 py-1 text-sm text-foreground focus:border-primary outline-none"
+                            onchange="updatePromoPrice(${item.id}, this.value)"
+                        >
+                    </td>
+                    <td class="p-5">
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="checkbox" class="sr-only peer" ${item.promo ? 'checked' : ''} onchange="togglePromoStatus(${item.id})">
+                            <div class="relative w-11 h-6 bg-input border-border peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                            <span class="ms-3 text-sm font-medium text-foreground">${item.promo ? 'Ativo' : 'Inativo'}</span>
+                        </label>
+                    </td>
+                    <td class="p-5 pr-6 text-right text-xs text-muted-foreground">
+                        ${item.promo ? 'Exibindo na Loja' : '-'}
+                    </td>
+                </tr>
+            `).join('');
         }
 
         function updatePromoPrice(id, value) {
@@ -1272,7 +1416,6 @@
             const prompt = `Analise este cardápio de hamburgueria: ${JSON.stringify(menuSummary)}. Crie 3 insights curtos: 1. Sugestão de Combo, 2. Destaque do Dia, 3. Alerta de Preço. Use emojis.`;
 
             try {
-                // Using browser fetch as per free API documentation example
                 const response = await fetch('https://apifreellm.com/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
