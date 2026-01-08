@@ -1464,6 +1464,36 @@
             alert("Cardápio atualizado com sucesso!");
         }
 
+        // --- CORREÇÃO DA ABA HORÁRIOS ---
+        function renderAdminHours() {
+            const container = document.getElementById('hours-config-container');
+            if (!container) return; // Segurança contra o erro anterior (admin-content)
+            
+            container.innerHTML = Object.keys(state.openingHours).map(day => `
+                <div class="flex items-center justify-between p-4 bg-secondary rounded-2xl border border-transparent hover:border-primary/20 transition-all">
+                    <span class="font-bold text-sm w-20 text-foreground">${day}</span>
+                    <div class="flex items-center gap-2">
+                        <input type="time" value="${state.openingHours[day].open}" onchange="updateHour('${day}', 'open', this.value)" class="bg-background text-foreground border border-border p-2 rounded-lg text-xs font-medium outline-none focus:border-primary">
+                        <span class="text-muted-foreground text-xs">até</span>
+                        <input type="time" value="${state.openingHours[day].close}" onchange="updateHour('${day}', 'close', this.value)" class="bg-background text-foreground border border-border p-2 rounded-lg text-xs font-medium outline-none focus:border-primary">
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer ml-4">
+                        <input type="checkbox" ${state.openingHours[day].active ? 'checked' : ''} onchange="updateHour('${day}', 'active', this.checked)" class="sr-only peer">
+                        <div class="w-9 h-5 bg-input peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+                    </label>
+                </div>
+            `).join('');
+        }
+
+        function updateHour(day, key, val) {
+            state.openingHours[day][key] = val;
+        }
+
+        function saveHours() {
+            saveData();
+            renderOpeningHoursTag();
+            alert('Horários de funcionamento atualizados com sucesso!');
+        }
     </script>
 </body>
 </html>
