@@ -802,6 +802,109 @@
         });
         
         // --- Functions ---
+        // NEW: Function to open product details
+        function openDetails(id) {
+            const product = state.menu.find(p => p.id === id);
+            if (!product) return;
+            state.selectedProduct = product;
+            state.selectedOptions = {};
+            
+            const mainView = document.getElementById('main-view');
+            const detailsView = document.getElementById('details-view');
+            const detailsContent = document.getElementById('details-content');
+
+            mainView.classList.add('hidden');
+            detailsView.classList.remove('hidden');
+            window.scrollTo(0, 0);
+
+            // Render details content
+            const isPromo = product.promo && product.promoPrice > 0;
+            const price = isPromo ? product.promoPrice : product.price;
+
+            detailsContent.innerHTML = `
+                <div class="col-span-1 lg:col-span-7 animate-slide-up">
+                    <div class="rounded-3xl overflow-hidden shadow-2xl mb-8 relative aspect-square md:aspect-video group">
+                        <img src="${product.image}" class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                        <div class="absolute bottom-0 left-0 p-8 w-full">
+                             <h2 class="text-3xl md:text-5xl font-black text-white mb-2 leading-none drop-shadow-lg">${product.name}</h2>
+                             <div class="flex items-center gap-4">
+                                <span class="text-3xl font-black text-primary drop-shadow-md">R$ ${price.toFixed(2)}</span>
+                                ${isPromo ? `<span class="bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full animate-pulse shadow-lg">PROMOÇÃO</span>` : ''}
+                             </div>
+                        </div>
+                    </div>
+                    
+                    <div class="prose dark:prose-invert max-w-none mb-8">
+                        <h4 class="text-sm font-bold uppercase text-muted-foreground tracking-widest mb-3 flex items-center gap-2"><i data-lucide="info" class="w-4 h-4"></i> Descrição</h4>
+                        <p class="text-lg leading-relaxed text-foreground bg-card p-6 rounded-2xl border border-border shadow-sm">${product.description}</p>
+                    </div>
+                </div>
+
+                <div class="col-span-1 lg:col-span-5 animate-slide-up" style="animation-delay: 0.1s;">
+                    <div class="bg-card border border-border rounded-[2rem] p-6 lg:p-8 shadow-xl sticky top-24">
+                        ${product.options && product.options.length > 0 ? `
+                            <div class="mb-8">
+                                <h4 class="text-sm font-bold uppercase tracking-widest mb-4 flex items-center gap-2 text-foreground"><i data-lucide="layers" class="w-4 h-4"></i> Personalize seu pedido</h4>
+                                <div class="space-y-3">
+                                    ${product.options.map(o => `
+                                        <label class="flex justify-between items-center p-4 bg-background rounded-xl cursor-pointer hover:border-primary border-2 border-transparent transition-all shadow-sm group hover:bg-accent/50 relative overflow-hidden">
+                                            <div class="flex items-center gap-3 relative z-10">
+                                                <div class="relative flex items-center">
+                                                    <input type="checkbox" onchange="toggleOption('${o.id}')" class="peer w-6 h-6 appearance-none border-2 border-muted-foreground rounded-lg checked:bg-primary checked:border-primary transition-all">
+                                                    <i data-lucide="check" class="w-4 h-4 text-white absolute top-1 left-1 opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity"></i>
+                                                </div>
+                                                <span class="font-bold text-sm text-foreground group-hover:text-primary transition-colors">${o.name}</span>
+                                            </div>
+                                            <span class="text-xs font-black bg-secondary px-3 py-1.5 rounded-lg text-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">+ R$ ${o.price.toFixed(2)}</span>
+                                        </label>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        <div class="space-y-4">
+                            <button onclick="addToCart()" class="w-full py-5 bg-primary hover:bg-primary/90 text-white font-black rounded-2xl shadow-xl shadow-primary/30 flex justify-between px-8 items-center text-lg transform transition-all hover:-translate-y-1 active:scale-95 group">
+                                <span class="group-hover:translate-x-1 transition-transform">ADICIONAR À SACOLA</span>
+                                <div class="flex items-center gap-2 text-sm bg-white/20 px-3 py-1 rounded-lg backdrop-blur-sm group-hover:bg-white/30 transition-colors">
+                                    <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+                                    <span>R$ ${price.toFixed(2)}</span>
+                                </div>
+                            </button>
+                            <button onclick="closeDetails()" class="w-full py-3 text-muted-foreground font-bold hover:text-foreground transition-colors text-sm">Cancelar e Voltar</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        // NEW: Function to close details
+        function closeDetails() {
+            document.getElementById('details-view').classList.add('hidden');
+            document.getElementById('main-view').classList.remove('hidden');
+            state.selectedProduct = null;
+            window.scrollTo(0, 0);
+        }
+
+        // NEW: Function to toggle options
+        function toggleOption(optId) {
+            state.selectedOptions[optId] = !state.selectedOptions[optId];
+        }
+
+        // NEW: Helper to calculate price
+        function getCustomizedPrice(product, options) {
+            let price = product.promo ? (product.promoPrice || product.price) : product.price;
+            if(product.options) {
+                product.options.forEach(opt => {
+                    if(options[opt.id]) {
+                        price += opt.price;
+                    }
+                });
+            }
+            return price;
+        }
+
         function renderOpeningHoursTag() {
             const days = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
             const now = new Date();
